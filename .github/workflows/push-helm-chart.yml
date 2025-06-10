@@ -1,0 +1,39 @@
+name: Release Helm Charts
+
+on:
+  push:
+    paths:
+      - charts/**
+    branches:
+      - main
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: helm lint
+        run: |
+          helm lint charts/${{ github.event.repository.name }}
+      - name: helm package
+        run: |
+          helm package charts/${{ github.event.repository.name }}
+      - name: helm login
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
+      - id: repository
+        uses: ASzc/change-string-case-action@v6
+        with:
+          string: "oci://ghcr.io/${{ github.repository }}/charts"
+      - name: helm push
+        run: |
+          VERSION=$( echo ${{ github.event.repository.name }}-*.tgz | sed 's/^${{ github.event.repository.name }}-//' | sed 's/.tgz$//');
+          if helm pull ${{ steps.repository.outputs.lowercase }}/${{ github.event.repository.name }}  --version $VERSION; then
+            echo "Chart already exists"
+            exit 2
+          else
+            helm push ${{ github.event.repository.name }}-*.tgz ${{ steps.repository.outputs.lowercase }};
+          fi
