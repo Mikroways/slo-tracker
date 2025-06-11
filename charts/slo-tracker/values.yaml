@@ -103,8 +103,6 @@ readinessProbe: {}
   #   path: /
   #   port: http
 
-extraEnv:
-  FOO: bar
+extraEnv: []
 
-extraSecrets:
-  FOO: bar
+extraSecrets: []

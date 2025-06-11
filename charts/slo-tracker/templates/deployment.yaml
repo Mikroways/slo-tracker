@@ -26,7 +26,7 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      # serviceAccountName: {{ include "slo-tracker.serviceAccountName" . }}
+      serviceAccountName: {{ include "slo-tracker.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       {{- with .Values.hostAliases }}
@@ -38,11 +38,17 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if or .Values.extraSecrets .Values.extraEnv}}
           envFrom:
+            {{- if .Values.extraEnv }}
             - configMapRef:
                 name: {{ include "slo-tracker.fullname" . }}-cm
+            {{- end }}
+            {{- if .Values.extraSecrets }}
             - secretRef:
                 name: {{ include "slo-tracker.fullname" . }}-secret
+            {{- end }}
+          {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
