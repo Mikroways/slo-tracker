@@ -1,0 +1,9 @@
+apiVersion: v2
+appVersion: 1.0.0
+description: A Helm chart for Kubernetes
+home: https://www.mikroways.net
+sources:
+  - https://github.com/Mikroways/slo-tracker/charts/slo-tracker
+name: slo-tracker
+type: application
+version: 1.0.0

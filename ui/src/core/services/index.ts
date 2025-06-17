@@ -1,1 +1,1 @@
-export const API = `${document.location.protocol}//${document.location.hostname}:8080`;
+export const API = `${document.location.protocol}//${document.location.hostname}`;
