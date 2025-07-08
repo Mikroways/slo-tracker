@@ -18,6 +18,7 @@ type Incident interface {
 	Create(req *schema.IncidentReq) (*schema.Incident, *errors.AppError)
 	GetByID(incidentID uint) (*schema.Incident, *errors.AppError)
 	GetBySLIName(sloID uint, sliName string) (*schema.Incident, *errors.AppError)
+	GetBySLINamev2(sliName string) (*schema.Incident, *errors.AppError)
 	Update(incident *schema.Incident, update *schema.Incident) (*schema.Incident, *errors.AppError)
 	Delete(SLOID uint) *errors.AppError
 }

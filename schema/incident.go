@@ -49,6 +49,7 @@ type PromIncidentReq struct {
 		Labels struct {
 			Alertname string `json:"alertname"`
 			Instance  string `json:"instance"`
+			Name  string `json:"name"`
 		} `json:"labels"`
 		StartsAt time.Time `json:"startsAt"`
 		EndsAt   time.Time `json:"endsAt"`
