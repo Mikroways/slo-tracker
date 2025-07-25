@@ -76,22 +76,13 @@ func CreatePromIncidentHandlerByLabelName(w http.ResponseWriter, r *http.Request
 
 	if input.Status == "firing" {
 		for _, alert := range input.Alerts {
-			incident, _ := store.Incident().GetBySLINamev2(alert.Labels.Name)
-
+			incident, _ := store.Incident().GetBySLINameV2(alert.Labels.Name)
 			// There are no open incident for this SLI, creating new incident
 			if incident == nil || incident.State != "open" {
-
-				slo, _ := store.SLO().Create(&schema.SLO{
-					SLOName: alert.Labels.Name,
-					TargetSLO: 100,
-					CurrentSLO: 100,
-					RemainingErrBudget: 0,
-				})
-
 				fmt.Println("Existing incident not found, so creating one now")
 				incident, _ = store.Incident().Create(&schema.IncidentReq{
 					SliName:          alert.Labels.Name,
-					SLOID:            slo.ID,
+					SLOID:            getSloId(incident, alert.Labels.Name),
 					Alertsource:      "Prometheus",
 					State:            "open",
 					ErrorBudgetSpent: 0,
@@ -103,7 +94,7 @@ func CreatePromIncidentHandlerByLabelName(w http.ResponseWriter, r *http.Request
 
 	if input.Status == "resolved" {
 		for _, alert := range input.Alerts {
-			incident, err := store.Incident().GetBySLINamev2(alert.Labels.Name)
+			incident, err := store.Incident().GetBySLINameAndOpenState(alert.Labels.Name)
 
 			if err != nil {
 				fmt.Println("Continue with the next alert")
@@ -123,4 +114,19 @@ func CreatePromIncidentHandlerByLabelName(w http.ResponseWriter, r *http.Request
 		}
 	}
 	return nil
+}
+
+
+func getSloId(incident *schema.Incident, name string) uint {
+	if (incident == nil) {
+		slo, _ := store.SLO().Create(&schema.SLO{
+			SLOName: name,
+			TargetSLO: 100,
+			CurrentSLO: 100,
+			RemainingErrBudget: 0,
+		})
+		return slo.ID
+	} else {
+		return incident.SLOID
+	}
 }
