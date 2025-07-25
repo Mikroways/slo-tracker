@@ -8,7 +8,9 @@ import (
 	"slo-tracker/schema"
 
 	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/jackc/pgx/v4/stdlib"
 	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -17,28 +19,57 @@ var dbConn *gorm.DB
 // Init ...
 func Init() {
 
-	// Connect to mysql using sql driver and create a database
-	tempDsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/", config.DBUser, config.DBPass, config.DBHost, config.DBPort)
-	db, err := sql.Open("mysql", tempDsn)
-	if err != nil {
-		panic(err)
-	}
-	_, _ = db.Exec("CREATE DATABASE IF NOT EXISTS " + config.DBName)
-	db.Close()
+	if (config.DBDriver == "mysql") {
+		// Connect to mysql using sql driver and create a database
+		tempDsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/", config.DBUser, config.DBPass, config.DBHost, config.DBPort)
+		db, err := sql.Open("mysql", tempDsn)
 
-	// Connect to newrely created database using gorm
-	gormDb, err := gorm.Open(mysql.Open(config.DBDsn), &gorm.Config{})
-	if err != nil {
-		log.Fatal(err)
-	}
+		if err != nil {
+			panic(err)
+		}
+	
+		_, _ = db.Exec("CREATE DATABASE IF NOT EXISTS " + config.DBName)
+		db.Close()
 
-	dbConn = gormDb
-	gormDb.AutoMigrate(
-		&schema.Incident{},
-		&schema.IncidentReq{},
-		&schema.SLO{},
-		//TODO: add other schemas
-	)
+		// Connect to newrely created database using gorm
+		gormDb, err := gorm.Open(mysql.Open(config.DBDsn), &gorm.Config{})
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		dbConn = gormDb
+		gormDb.AutoMigrate(
+			&schema.Incident{},
+			&schema.IncidentReq{},
+			&schema.SLO{},
+			//TODO: add other schemas
+		)
+	} else {
+		tempDsn := fmt.Sprintf("postgres://%s:%s@%s:%s/", config.DBUser, config.DBPass, config.DBHost, config.DBPort)
+		db, err := sql.Open("pgx", tempDsn)
+
+		if err != nil {
+			panic(err)
+		}
+
+		_, _ = db.Exec("CREATE DATABASE " + config.DBName)
+		db.Close()
+
+		gormDb, err := gorm.Open(postgres.Open(config.DBDsn), &gorm.Config{})
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		dbConn = gormDb
+		gormDb.AutoMigrate(
+			&schema.Incident{},
+			&schema.IncidentReq{},
+			&schema.SLO{},
+			//TODO: add other schemas
+		)
+	} 
 }
 
 // Conn struct holds the store connection

@@ -12,9 +12,21 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: SecretPassword
 
+  postgres:
+    image: postgres
+    #network_mode: host
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data_p:/var/lib/postgresql/data
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: SecretPassword
+      POSTGRES_USER: root
+
   slo-be:
     depends_on:
-      - db
+      - postgres
     build:
       context: .
       dockerfile: Dockerfile
@@ -23,10 +35,12 @@ services:
     ports:
       - "8080:8080"
     links:
-      - db
+      - postgres
     restart: always
     environment:
-      DB_HOST: db
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DRIVER: postgres
 
   slo-fe:
     depends_on:
@@ -48,3 +62,4 @@ services:
 
 volumes:
   db_data: {}
+  db_data_p: {}

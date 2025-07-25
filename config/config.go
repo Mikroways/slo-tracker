@@ -30,9 +30,13 @@ var (
 // Initialize ...
 func Initialize() {
 	GetAllEnv()
-	DBDsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+	if (DBDriver == "mysql") {
+		DBDsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		DBUser, DBPass, DBHost, DBPort, DBName)
-
+	} else {
+		DBDsn = fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", 
+		DBUser, DBPass, DBHost, DBPort, DBName)
+	}
 }
 
 // GetAllEnv should get all the env configs required for the app.
