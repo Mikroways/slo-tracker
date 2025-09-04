@@ -46,3 +46,23 @@ Refer to [CONTRIBUTING.md](https://github.com/roshan8/slo-tracker/blob/main/CONT
 
 [![Stargazers over time](https://starchart.cc/roshan8/slo-tracker.svg)](https://starchart.cc/roshan8/slo-tracker)
 
+
+## DB Migrations
+
+Historically this app backend creates db schemas on startup, however we believe it's not a good practice leting the app interact with schema structure, therefore we moved to [Atlas](https://github.com/ariga/atlas), here some handy commands:
+
+
+Generate migrations
+```sh
+atlas migrate diff --env gorm
+```
+
+Inspect schema, outputs on stdout the tables, columns and index definition
+```sh
+atlas schema inspect --env gorm --url "env://src"
+```
+
+Apply the changes (remove --dry-run for real apply)
+```sh
+atlas schema apply --env gorm  --url "postgres://root:SecretPassword@localhost:5432/slotracker?sslmode=disable" --dry-run
+```

@@ -2,10 +2,14 @@ package schema
 
 import (
 	"time"
+
+	"gorm.io/gorm"
 )
 
 // SLO stores the SLO response payload
 type SLO struct {
+	gorm.Model
+
 	ID                 uint       `json:"id,omitempty" sql:"primary_key"`
 	SLOName            string     `json:"slo_name" gorm:"unique;not null"`
 	TargetSLO          float32    `json:"target_slo"`

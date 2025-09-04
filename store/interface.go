@@ -3,6 +3,8 @@ package store
 import (
 	"slo-tracker/pkg/errors"
 	"slo-tracker/schema"
+
+	"gorm.io/gorm"
 )
 
 // Store global store interface - provides db interface methods
@@ -31,4 +33,10 @@ type SLO interface {
 	Update(SLO *schema.SLO, update *schema.SLO) (*schema.SLO, *errors.AppError)
 	Delete(SLO *schema.SLO) *errors.AppError
 	CutErrBudget(SLOID uint, downtimeInMins float32) *errors.AppError
+}
+
+type Database interface {
+	GenerateDSN(string)
+	ConnectORM() error
+	GetGorm() *gorm.DB
 }

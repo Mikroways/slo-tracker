@@ -12,6 +12,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/rs/cors"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -22,7 +23,7 @@ var (
 func main() {
 	config.Initialize()
 	api.InitService(name, version)
-	trace.Setup(config.Env)
+	trace.Setup(viper.GetString("ENV"))
 
 	router := chi.NewRouter()
 	cors := cors.New(cors.Options{
@@ -53,6 +54,6 @@ func main() {
 	// router.Route("/v1", v1.Init)
 	router.Route("/", v1.Routes)
 
-	trace.Log.Infof("Starting %s:%s on port :%s\n", name, version, config.Port)
-	http.ListenAndServe(fmt.Sprintf(":%s", config.Port), router)
+	trace.Log.Infof("Starting %s:%s on port :%s\n", name, version, viper.GetString("PORT"))
+	http.ListenAndServe(fmt.Sprintf(":%s", viper.GetString("PORT")), router)
 }

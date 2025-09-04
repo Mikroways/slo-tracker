@@ -1,8 +1,7 @@
 package config
 
 import (
-	"fmt"
-	"os"
+	"github.com/spf13/viper"
 )
 
 const (
@@ -14,44 +13,18 @@ const (
 	EnvProduction = "production"
 )
 
-// Env holds the current environment
-var (
-	Env      string
-	Port     string
-	DBDriver string
-	DBHost   string
-	DBPort   string
-	DBUser   string
-	DBPass   string
-	DBName   string
-	DBDsn    string
-)
-
 // Initialize ...
 func Initialize() {
-	GetAllEnv()
-	DBDsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		DBUser, DBPass, DBHost, DBPort, DBName)
 
-}
+	viper.AutomaticEnv()
 
-// GetAllEnv should get all the env configs required for the app.
-func GetAllEnv() {
-	// API Configs
-	mustEnv("ENV", &Env, EnvDev)
-	mustEnv("PORT", &Port, "8080")
-	mustEnv("DB_DRIVER", &DBDriver, "mysql")
-	mustEnv("DB_HOST", &DBHost, "localhost")
-	mustEnv("DB_PORT", &DBPort, "3306")
-	mustEnv("DB_USER", &DBUser, "root")
-	mustEnv("DB_PASS", &DBPass, "SecretPassword")
-	mustEnv("DB_NAME", &DBName, "slotracker_dev")
-}
+	viper.SetDefault("ENV", EnvDev)
+	viper.SetDefault("PORT", "8080")
+	viper.SetDefault("DB_DRIVER", "postgres")
+	viper.SetDefault("DB_HOST", "localhost")
+	viper.SetDefault("DB_PORT", "5432")
+	viper.SetDefault("DB_USER", "root")
+	viper.SetDefault("DB_PASS", "SecretPassword")
+	viper.SetDefault("DB_NAME", "slotracker")
 
-// mustEnv get the env variable with the name 'key' and store it in 'value'
-func mustEnv(key string, value *string, defaultVal string) {
-	if *value = os.Getenv(key); *value == "" {
-		*value = defaultVal
-		fmt.Printf("%s env variable not set, using default value.\n", key)
-	}
 }
