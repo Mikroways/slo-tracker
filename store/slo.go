@@ -1,7 +1,6 @@
 package store
 
 import (
-	"fmt"
 	"slo-tracker/pkg/errors"
 	"slo-tracker/schema"
 
@@ -19,32 +18,32 @@ type SLOStore struct {
 // NewSLOStore ...
 func NewSLOStore(st *Conn) *SLOStore {
 	cs := &SLOStore{st}
-	go cs.createTableIfNotExists()
+	// go cs.createTableIfNotExists()
 	return cs
 }
 
-func (cs *SLOStore) createTableIfNotExists() {
-	fmt.Println("Creating the slo table now!")
-	if !cs.DB.Migrator().HasTable(&schema.SLO{}) {
-		if err := cs.DB.Migrator().CreateTable(&schema.SLO{}).Error; err != nil {
-			fmt.Println(err)
-		}
-	}
+// func (cs *SLOStore) createTableIfNotExists() {
+// 	fmt.Println("Creating the slo table now!")
+// 	if !cs.DB.Migrator().HasTable(&schema.SLO{}) {
+// 		if err := cs.DB.Migrator().CreateTable(&schema.SLO{}).Error; err != nil {
+// 			fmt.Println(err)
+// 		}
+// 	}
 
-	// Create the first SLO record, Whenever use tries to
-	// set their target SLO, patch calls will be made on this record
-	fmt.Println("Creating the first record!")
-	firstSLORecord := &schema.SLO{
-		SLOName:            "Default",
-		TargetSLO:          100,
-		CurrentSLO:         100,
-		RemainingErrBudget: 0,
-	}
-	if err := cs.DB.Save(firstSLORecord).Error; err != nil {
-		fmt.Println(errors.InternalServerStd().AddDebug(err))
-	}
-	fmt.Println("Default SLO record got created")
-}
+// 	// Create the first SLO record, Whenever use tries to
+// 	// set their target SLO, patch calls will be made on this record
+// 	fmt.Println("Creating the first record!")
+// 	firstSLORecord := &schema.SLO{
+// 		SLOName:            "Default",
+// 		TargetSLO:          100,
+// 		CurrentSLO:         100,
+// 		RemainingErrBudget: 0,
+// 	}
+// 	if err := cs.DB.Save(firstSLORecord).Error; err != nil {
+// 		fmt.Println(errors.InternalServerStd().AddDebug(err))
+// 	}
+// 	fmt.Println("Default SLO record got created")
+// }
 
 // All returns all the SLOs
 func (cs *SLOStore) All() ([]*schema.SLO, *errors.AppError) {
