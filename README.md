@@ -46,3 +46,12 @@ Refer to [CONTRIBUTING.md](https://github.com/roshan8/slo-tracker/blob/main/CONT
 
 [![Stargazers over time](https://starchart.cc/roshan8/slo-tracker.svg)](https://starchart.cc/roshan8/slo-tracker)
 
+
+
+generate migrations
+atlas migrate diff --env gorm
+
+inspect schema, outputs on stdout the tables, columns and index definition
+atlas schema inspect --env gorm --url "env://src"
+
+atlas schema apply --env gorm  --url "postgres://root:SecretPassword@localhost:5432/slotracker?sslmode=disable" --dry-run
