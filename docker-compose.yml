@@ -3,17 +3,17 @@ version: "3.9"
 services:
 
   # commenting this since postgres should be the default database, uncomment to use mysql as db layer
-  # db:
+  # mysql:
   #   image: mysql
   #   #network_mode: host
   #   ports:
   #     - "3306:3306"
   #   # volumes:
-  #   #   - db_data:/var/lib/mysql
+  #   #   - db_data_m:/var/lib/mysql
   #   restart: always
   #   environment:
   #     MYSQL_ROOT_PASSWORD: SecretPassword
-  #      MYSQL_DATABASE: slotracker
+  #     MYSQL_DATABASE: slotracker
 
   postgres:
     image: postgres
@@ -66,5 +66,5 @@ services:
 
 volumes:
   db_data_p: {}
-  # db_data: {}
+  # db_data_m: {}
  
