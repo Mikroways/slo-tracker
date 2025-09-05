@@ -15,17 +15,8 @@ type IncidentStore struct {
 // NewIncidentStore ...
 func NewIncidentStore(st *Conn) *IncidentStore {
 	cs := &IncidentStore{st}
-	// go cs.createTableIfNotExists()
 	return cs
 }
-
-// func (cs *IncidentStore) createTableIfNotExists() {
-// 	if !cs.DB.Migrator().HasTable(&schema.Incident{}) {
-// 		if err := cs.DB.Migrator().CreateTable(&schema.Incident{}).Error; err != nil {
-// 			fmt.Println(err)
-// 		}
-// 	}
-// }
 
 // All returns all the Incidents
 func (cs *IncidentStore) All(SLOID uint) ([]*schema.Incident, *errors.AppError) {
