@@ -100,7 +100,6 @@ func (cs *SLOStore) Delete(SLO *schema.SLO) *errors.AppError {
 
 // CutErrBudget subtract the downtime mins from error budget
 func (cs *SLOStore) CutErrBudget(SLOID uint, downtimeInMins float32) *errors.AppError {
-
 	sloRecord, err := cs.GetByID(SLOID)
 
 	if err != nil {

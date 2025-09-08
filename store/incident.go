@@ -1,8 +1,10 @@
 package store
 
 import (
+	"log"
 	"slo-tracker/pkg/errors"
 	"slo-tracker/schema"
+	"slo-tracker/utils"
 
 	"gorm.io/gorm"
 )
@@ -74,11 +76,14 @@ func (cs *IncidentStore) Create(req *schema.IncidentReq) (*schema.Incident, *err
 
 // Update the incident record..
 func (cs *IncidentStore) Update(incident *schema.Incident, update *schema.Incident) (*schema.Incident, *errors.AppError) {
-
 	var err *errors.AppError
 
+	// calculate accountable time
+	accHours := utils.CalculateAccountableErrBudget(incident.CreatedAt, incident.ErrorBudgetSpent)
+	log.Println(accHours)
+
 	if incident.MarkFalsePositive && !update.MarkFalsePositive {
-		err = cs.SLOConn.CutErrBudget(incident.SLOID, incident.ErrorBudgetSpent)
+		err = cs.SLOConn.CutErrBudget(incident.SLOID, accHours)
 	}
 
 	if !incident.MarkFalsePositive && update.MarkFalsePositive {
@@ -86,7 +91,7 @@ func (cs *IncidentStore) Update(incident *schema.Incident, update *schema.Incide
 		if update.State == "open" {
 			update.State = "closed"
 		}
-		err = cs.SLOConn.CutErrBudget(incident.SLOID, -incident.ErrorBudgetSpent)
+		err = cs.SLOConn.CutErrBudget(incident.SLOID, -accHours)
 	}
 
 	if err != nil {
