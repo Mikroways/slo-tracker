@@ -1,0 +1,44 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "slo-tracker.fullname" . }}
+  labels:
+    {{- include "slo-tracker.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-5"
+spec:
+  template:
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          command: ["sh", "-c", "echo 'Post-install job executed!'"]
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if or .Values.extraSecrets .Values.extraEnv}}
+          envFrom:
+            {{- if .Values.extraEnv }}
+            - configMapRef:
+                name: {{ include "slo-tracker.fullname" . }}-cm
+            {{- end }}
+            {{- if .Values.extraSecrets }}
+            - secretRef:
+                name: {{ include "slo-tracker.fullname" . }}-secret
+            {{- end }}
+          {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      restartPolicy: Never
+  backoffLimit: 4
