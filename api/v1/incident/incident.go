@@ -80,3 +80,32 @@ func updateIncidentHandler(w http.ResponseWriter, r *http.Request) *errors.AppEr
 	respond.OK(w, updated)
 	return nil
 }
+
+func updateFalsePositive(w http.ResponseWriter, r *http.Request) *errors.AppError {
+	var input schema.Incident
+	ctx := r.Context()
+	incident, _ := ctx.Value("incident").(*schema.Incident)
+
+	if err := utils.Decode(r, &input); err != nil {
+		return errors.BadRequest(err.Error()).AddDebug(err)
+	}
+
+	if incident.MarkFalsePositive == input.MarkFalsePositive {
+		// nothing to do, bool already matches
+		respond.OK(w, incident)
+		return nil
+	}
+
+	incidentCopy := *incident
+	incidentCopy.MarkFalsePositive = input.MarkFalsePositive
+
+	// when incident gets updated, it updates slo fields as well
+	// not using input as second parameter since it lacks some fields and will mess the structure
+	updated, err := store.Incident().Update(incident, &incidentCopy)
+	if err != nil {
+		return errors.BadRequest(err.Error()).AddDebug(err)
+	}
+
+	respond.OK(w, updated)
+	return nil
+}

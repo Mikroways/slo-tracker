@@ -25,7 +25,13 @@ func Init(r chi.Router) {
 		Route("/{incidentID:[0-9]+}", incidentIDSubRoutes)
 }
 
-// ROUTE: {host}/v1/incident/:incidentID/*
+// ROUTE: {host}/api/v1/incident/falsepositive/:incidentID
+func InitFalsePositive(r chi.Router) {
+	r.With(middleware.IncidentRequired).
+		Method(http.MethodPatch, "/{incidentID:[0-9]+}", api.Handler(updateFalsePositive))
+}
+
+// ROUTE: {host}/api/v1/incident/:incidentID/*
 func incidentIDSubRoutes(r chi.Router) {
 	r.Method(http.MethodGet, "/", api.Handler(getIncidentHandler))
 	r.Method(http.MethodPatch, "/", api.Handler(updateIncidentHandler))
