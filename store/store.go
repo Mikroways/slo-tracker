@@ -1,14 +1,10 @@
 package store
 
 import (
-	"database/sql"
 	"fmt"
-	"log"
-	"slo-tracker/config"
-	"slo-tracker/schema"
 
 	_ "github.com/go-sql-driver/mysql"
-	"gorm.io/driver/mysql"
+	"github.com/spf13/viper"
 	"gorm.io/gorm"
 )
 
@@ -17,28 +13,26 @@ var dbConn *gorm.DB
 // Init ...
 func Init() {
 
-	// Connect to mysql using sql driver and create a database
-	tempDsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/", config.DBUser, config.DBPass, config.DBHost, config.DBPort)
-	db, err := sql.Open("mysql", tempDsn)
+	var database Database
+	dbDriver := viper.GetString("DB_DRIVER")
+
+	switch dbDriver {
+	case "mysql":
+		database = &MysqlDB{}
+	case "postgres":
+		database = &PostgresDB{}
+	default:
+		panic(fmt.Sprintf("database driver not supported: %s", dbDriver))
+	}
+
+	database.GenerateDSN(viper.GetString("DB_NAME"))
+	err := database.ConnectORM()
+
 	if err != nil {
 		panic(err)
 	}
-	_, _ = db.Exec("CREATE DATABASE IF NOT EXISTS " + config.DBName)
-	db.Close()
 
-	// Connect to newrely created database using gorm
-	gormDb, err := gorm.Open(mysql.Open(config.DBDsn), &gorm.Config{})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	dbConn = gormDb
-	gormDb.AutoMigrate(
-		&schema.Incident{},
-		&schema.IncidentReq{},
-		&schema.SLO{},
-		//TODO: add other schemas
-	)
+	dbConn = database.GetGorm()
 }
 
 // Conn struct holds the store connection

@@ -5,10 +5,14 @@ import (
 	"time"
 
 	"slo-tracker/pkg/errors"
+
+	"gorm.io/gorm"
 )
 
 // Incident stores the incidentList response payload
 type Incident struct {
+	gorm.Model
+
 	ID                uint       `json:"id,omitempty" sql:"primary_key"`
 	SliName           string     `json:"sli_name"`
 	SLOID             uint       `json:"slo_id"` // References SLO model
@@ -21,6 +25,8 @@ type Incident struct {
 
 // IncidentReq Schema stores the new incident creation/update request payload
 type IncidentReq struct {
+	gorm.Model
+
 	SliName           string  `json:"sli_name"`
 	SLOID             uint    `json:"slo_id"` // References SLO model
 	Alertsource       string  `json:"alertsource"`

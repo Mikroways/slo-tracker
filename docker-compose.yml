@@ -1,32 +1,50 @@
 version: "3.9"
 
 services:
-  db:
-    image: mysql:5.7
+
+  # commenting this since postgres should be the default database, uncomment to use mysql as db layer
+  # mysql:
+  #   image: mysql
+  #   #network_mode: host
+  #   ports:
+  #     - "3306:3306"
+  #   # volumes:
+  #   #   - db_data_m:/var/lib/mysql
+  #   restart: always
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: SecretPassword
+  #     MYSQL_DATABASE: slotracker
+
+  postgres:
+    image: postgres
     #network_mode: host
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - db_data:/var/lib/mysql
+      - db_data_p:/var/lib/postgresql/data
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: SecretPassword
+      POSTGRES_DB: slotracker
+      POSTGRES_PASSWORD: SecretPassword
+      POSTGRES_USER: root
 
   slo-be:
     depends_on:
-      - db
+      - postgres
     build:
       context: .
       dockerfile: Dockerfile
     image: slo-be:latest
     #network_mode: host
     ports:
-      - "8080:8080"
+      - "80:8080"
     links:
-      - db
+      - postgres
     restart: always
     environment:
-      DB_HOST: db
+      DB_HOST: postgres
+      DB_DRIVER: postgres
+      DB_PORT: 5432
 
   slo-fe:
     depends_on:
@@ -47,4 +65,6 @@ services:
       PASSWORD: admin   
 
 volumes:
-  db_data: {}
+  db_data_p: {}
+  # db_data_m: {}
+ 
