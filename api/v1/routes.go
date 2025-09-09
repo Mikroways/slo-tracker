@@ -25,4 +25,5 @@ func Init(r chi.Router) {
 	r.With(middleware.SLORequired).
 		Route("/incident/{SLOID}", incident.Init)
 	r.Route("/slo", slo.Init)
+	r.Route("/falsepositive", incident.InitFalsePositive)
 }
