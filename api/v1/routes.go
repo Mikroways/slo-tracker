@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"slo-tracker/api"
 	v1 "slo-tracker/api"
-	"slo-tracker/api/v1/incident"
+	incident "slo-tracker/api/v1/incident"
 	"slo-tracker/api/v1/slo"
 	"slo-tracker/middleware"
 
@@ -22,6 +22,7 @@ func Routes(r chi.Router) {
 // Init initializes all the v1 routes
 func Init(r chi.Router) {
 	// ROUTE: {host}/v1/incident/SLOID/:incidentID/*
+	r.Method(http.MethodPost, "/incident/prometheus", api.Handler(incident.CreatePromIncidentHandlerByLabelName))
 	r.With(middleware.SLORequired).
 		Route("/incident/{SLOID}", incident.Init)
 	r.Route("/slo", slo.Init)
