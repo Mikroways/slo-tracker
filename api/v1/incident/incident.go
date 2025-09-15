@@ -17,6 +17,17 @@ func getAllIncidentsHandler(w http.ResponseWriter, r *http.Request) *errors.AppE
 	ctx := r.Context()
 	SLOID, _ := ctx.Value("SLOID").(uint)
 
+	// startDate := r.URL.Query().Get("start-date")
+	// //endDate := r.URL.Query().Get("start-date")
+
+	// if startDate == "" {
+	// 	log.Println("start date is not present")
+	// 	incidents, err := store.Incident().All(SLOID)
+	// } else {
+	// 	log.Println("start date IS present")
+	// 	parsedStartDate, err := time.Parse("2006-01-02", startDate)
+	// }
+
 	incidents, err := store.Incident().All(SLOID)
 	if err != nil {
 		return err
