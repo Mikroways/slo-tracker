@@ -24,7 +24,7 @@ const CreateSLO: React.FC<IProps> = (props) => {
     }
 
     if (open_hour >= close_hour) {
-      openNotification('error', 'Ending Hour should be after Staring Hour');
+      openNotification('error', 'Closing Hour should be after Opening Hour');
       return;
     }
 
@@ -65,7 +65,7 @@ const CreateSLO: React.FC<IProps> = (props) => {
       <Form.Item
         label="Opening Hour"
         name="open_hour"
-        rules={[{ required: true, message: 'Please provide a opening hour' }]}
+        rules={[{ required: true, message: 'Please provide an opening hour' }]}
       >
         <TimePicker format="HH:mm" minuteStep={15} />
       </Form.Item>
