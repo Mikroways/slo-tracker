@@ -37,6 +37,8 @@ CREATE TABLE "public"."slos" (
   "updated_at" timestamptz NULL,
   "deleted_at" timestamptz NULL,
   "slo_name" text NOT NULL,
+  "open_hour" time NULL,
+  "close_hour" time NULL,
   "target_slo" numeric NULL,
   "current_slo" numeric NULL,
   "remaining_err_budget" numeric NULL,

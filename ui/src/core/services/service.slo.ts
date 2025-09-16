@@ -10,7 +10,7 @@ class SLOService {
 
   get = (sloId: number) => axios.get<IResponse<ISLO>>(`${this._api}/${sloId}`);
 
-  create = (data: Pick<ISLO, 'slo_name' | 'target_slo'>) =>
+  create = (data: Pick<ISLO, 'slo_name' | 'target_slo' | 'open_hour' | 'close_hour' >) =>
     axios.post<IResponse<ISLO>>(this._api, data);
 
   update = (

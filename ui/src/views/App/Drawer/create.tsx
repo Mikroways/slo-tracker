@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Form, Input } from 'antd';
+import { Button, Form, Input, TimePicker } from 'antd';
 import SLOService from '../../../core/services/service.slo';
 import openNotification from '../../../core/helpers/notification';
 
@@ -15,9 +15,16 @@ const CreateSLO: React.FC<IProps> = (props) => {
   const onSubmit = async (values: any) => {
     const slo_name = values['slo_name'];
     const target_slo = parseFloat(values['target_slo']);
+    const open_hour = values['open_hour'].format("HH:mm")
+    const close_hour = values['close_hour'].format("HH:mm")
 
     if (target_slo < 1 || target_slo > 100) {
       openNotification('error', 'Target SLO should be between 1 to 100.');
+      return;
+    }
+
+    if (open_hour >= close_hour) {
+      openNotification('error', 'Closing Hour should be after Opening Hour');
       return;
     }
 
@@ -25,6 +32,8 @@ const CreateSLO: React.FC<IProps> = (props) => {
       await _sloService.create({
         slo_name,
         target_slo,
+        open_hour,
+        close_hour,
       });
       props.refreshSLOs();
       openNotification('success', 'Successfully created SLO');
@@ -51,6 +60,22 @@ const CreateSLO: React.FC<IProps> = (props) => {
         rules={[{ required: true, message: 'Please provide a target SLO' }]}
       >
         <Input placeholder="Eg: 99.999" />
+      </Form.Item>
+
+      <Form.Item
+        label="Opening Hour"
+        name="open_hour"
+        rules={[{ required: true, message: 'Please provide an opening hour' }]}
+      >
+        <TimePicker format="HH:mm" minuteStep={15} />
+      </Form.Item>
+
+      <Form.Item
+        label="Closing Hour"
+        name="close_hour"
+        rules={[{ required: true, message: 'Please provide an closing hour' }]}
+      >
+        <TimePicker format="HH:mm" minuteStep={15}/>
       </Form.Item>
 
       <Form.Item>
