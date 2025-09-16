@@ -74,6 +74,8 @@ func (cs *SLOStore) Create(req *schema.SLO) (*schema.SLO, *errors.AppError) {
 		TargetSLO:          req.TargetSLO,
 		CurrentSLO:         req.CurrentSLO,
 		RemainingErrBudget: req.RemainingErrBudget,
+		OpenHour:           req.OpenHour,
+		CloseHour:          req.CloseHour,
 	}
 	if err := cs.DB.Save(slo).Error; err != nil {
 		return nil, errors.InternalServerStd().AddDebug(err)
