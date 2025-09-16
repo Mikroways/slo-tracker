@@ -3,6 +3,7 @@ package incident
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"slo-tracker/pkg/errors"
 	"slo-tracker/pkg/respond"
@@ -12,14 +13,29 @@ import (
 
 // getAllIncidentsHandler fetches and unmarshal the incidentt data
 func getAllIncidentsHandler(w http.ResponseWriter, r *http.Request) *errors.AppError {
-
+	var incidents []*schema.Incident
+	var appErr *errors.AppError
 	// fetch the slo_id from contex
 	ctx := r.Context()
 	SLOID, _ := ctx.Value("SLOID").(uint)
 
-	incidents, err := store.Incident().All(SLOID)
-	if err != nil {
-		return err
+	yearMonthStr := r.URL.Query().Get("yearMonth")
+
+	if yearMonthStr == "" { // parameter not present or is empty, return all incidents
+		incidents, appErr = store.Incident().All(SLOID)
+		if appErr != nil {
+			return appErr
+		}
+	} else {
+		_, err := time.Parse("2006-01", yearMonthStr)
+		if err != nil {
+			return errors.BadRequest("Error parsing yearMonth, parameter should be like '2025-08'").AddDebug(err)
+		}
+
+		incidents, appErr = store.Incident().GetByYearMonth(SLOID, yearMonthStr)
+		if err != nil {
+			return appErr
+		}
 	}
 
 	respond.OK(w, incidents)

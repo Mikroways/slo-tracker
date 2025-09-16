@@ -1,4 +1,4 @@
-import { Button, Col, Row, Tabs, Typography } from 'antd';
+import { Button, Col, Row, Tabs, Typography, DatePicker } from 'antd';
 import React, { useState } from 'react';
 import { EditOutlined, AlertOutlined } from '@ant-design/icons';
 
@@ -13,6 +13,7 @@ import useCalculateSLIs from '../../../core/hooks/useCalculateSLIs';
 import ConsumptionGraph from './ConsumptionGraph';
 import ErrBudgetBar from './ErrBudgetBar'
 import AlertSourcesModal from './AlertSources';
+import moment, { Moment } from 'moment';
 
 const { TabPane } = Tabs;
 
@@ -25,7 +26,15 @@ interface IProps {
 const { Title } = Typography;
 
 const SLO: React.FC<IProps> = ({ activeSLO, ...props }) => {
-  const { SLIs, refreshSLIs } = useGetSLIs(activeSLO);
+  const [selectedMonth, setSelectedMonth] = useState<Moment | null>(moment());
+  const handleMonthChange = (value: Moment | null, dateString: string) => {
+    setSelectedMonth(value);
+  };
+
+  const { SLIs, refreshSLIs } = useGetSLIs(
+    activeSLO,
+    selectedMonth ? selectedMonth.format('YYYY-MM') : undefined
+  );
   const { SLO, refreshSLO } = useGetSLO(activeSLO);
   const {
     incidentSummary,
@@ -38,7 +47,7 @@ const SLO: React.FC<IProps> = ({ activeSLO, ...props }) => {
     if (slo) refreshSLO();
     if (slis) refreshSLIs();
   };
-
+ 
   const [showReport, setShowReport] = useState(false);
   const closeReport = () => setShowReport(false);
   const openReport = () => setShowReport(true);
@@ -76,6 +85,12 @@ const SLO: React.FC<IProps> = ({ activeSLO, ...props }) => {
           </div>
         </Row>
         <Row>
+          <DatePicker
+            picker="month"
+            format="MMMM YYYY"
+            value={selectedMonth}
+            onChange={handleMonthChange}
+          />
           <Button style={{ marginRight: 24 }} onClick={openAlertSourceModal}>
             <AlertOutlined />
             Alert Sources

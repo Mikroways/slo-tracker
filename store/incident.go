@@ -3,6 +3,7 @@ package store
 import (
 	"slo-tracker/pkg/errors"
 	"slo-tracker/schema"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -23,6 +24,18 @@ func (cs *IncidentStore) All(SLOID uint) ([]*schema.Incident, *errors.AppError) 
 	var Incidents []*schema.Incident
 	if err := cs.DB.Order("created_at desc").Find(&Incidents, "slo_id=?", SLOID).Error; err != nil { // For displaying all the columns
 		// if err := cs.DB.Select("SliName, Alertsource, State, CreatedAt, ErrorBudgetSpent, MarkFalsePositive").Find(&Incidents).Error; err != nil {
+		return nil, errors.InternalServerStd().AddDebug(err)
+	}
+
+	return Incidents, nil
+}
+
+func (cs *IncidentStore) GetByYearMonth(SLOID uint, yearMonthStr string) ([]*schema.Incident, *errors.AppError) {
+	var Incidents []*schema.Incident
+	year := strings.Split(yearMonthStr, "-")[0]
+	month := strings.Split(yearMonthStr, "-")[1]
+
+	if err := cs.DB.Order("created_at desc").Where("EXTRACT(YEAR FROM created_at) = ? AND EXTRACT(MONTH FROM created_at) = ?", year, month).Find(&Incidents, "slo_id=?", SLOID).Error; err != nil {
 		return nil, errors.InternalServerStd().AddDebug(err)
 	}
 
