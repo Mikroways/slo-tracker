@@ -33,7 +33,6 @@ type SLO interface {
 	GetByName(SLOName string) (*schema.SLO, *errors.AppError)
 	Update(SLO *schema.SLO, update *schema.SLO) (*schema.SLO, *errors.AppError)
 	Delete(SLO *schema.SLO) *errors.AppError
-	//CutErrBudget(SLOID uint, downtimeInMins float32) *errors.AppError
 }
 
 type Database interface {

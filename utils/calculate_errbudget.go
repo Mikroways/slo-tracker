@@ -66,7 +66,7 @@ func ParseYearMonth(yearMonth string) (int, int, error) {
 }
 
 func DowntimeAcrossDays(openStr, closeStr string, alarmStart time.Time, durationMinutes float32) (float32, error) {
-	// Parse open and close times (use today's date just for parsing HH:mm:ss)
+
 	openParsed, err := time.Parse("15:04:05", openStr)
 	if err != nil {
 		return 0, fmt.Errorf("invalid open time: %w", err)
@@ -79,17 +79,15 @@ func DowntimeAcrossDays(openStr, closeStr string, alarmStart time.Time, duration
 	alarmEnd := alarmStart.Add(time.Duration(float64(durationMinutes) * float64(time.Minute)))
 	var totalMinutes float64
 
-	// Start from the day of alarmStart
 	currentDay := alarmStart
 
 	for !currentDay.After(alarmEnd) {
-		// Create open/close times anchored to currentDay
+
 		open := time.Date(currentDay.Year(), currentDay.Month(), currentDay.Day(),
 			openParsed.Hour(), openParsed.Minute(), openParsed.Second(), 0, currentDay.Location())
 		close := time.Date(currentDay.Year(), currentDay.Month(), currentDay.Day(),
 			closeParsed.Hour(), closeParsed.Minute(), closeParsed.Second(), 0, currentDay.Location())
 
-		// Find overlap
 		start := maxTime(open, alarmStart)
 		end := minTime(close, alarmEnd)
 
@@ -97,7 +95,6 @@ func DowntimeAcrossDays(openStr, closeStr string, alarmStart time.Time, duration
 			totalMinutes += end.Sub(start).Minutes()
 		}
 
-		// Next day
 		currentDay = currentDay.AddDate(0, 0, 1)
 	}
 

@@ -1,7 +1,6 @@
 package incident
 
 import (
-	"log"
 	"net/http"
 	"time"
 
@@ -18,7 +17,6 @@ func getAllIncidentsHandler(w http.ResponseWriter, r *http.Request) *errors.AppE
 	// fetch the slo_id from contex
 	ctx := r.Context()
 	SLOID, _ := ctx.Value("SLOID").(uint)
-	//SLO, _ := ctx.Value("SLO").(*schema.SLO)
 
 	yearMonthStr := r.URL.Query().Get("yearMonth")
 
@@ -38,11 +36,6 @@ func getAllIncidentsHandler(w http.ResponseWriter, r *http.Request) *errors.AppE
 			return appErr
 		}
 	}
-
-	// for _, incident := range incidents {
-	// 	log.Println(utils.DowntimeAcrossDays(SLO.OpenHour, SLO.CloseHour, *incident.CreatedAt, incident.ErrorBudgetSpent))
-	// 	incident.RealErrorBudget, _ = utils.DowntimeAcrossDays(SLO.OpenHour, SLO.CloseHour, *incident.CreatedAt, incident.ErrorBudgetSpent)
-	// }
 
 	respond.OK(w, incidents)
 	return nil
@@ -64,7 +57,7 @@ func createIncidentHandler(w http.ResponseWriter, r *http.Request) *errors.AppEr
 	input.CreatedAt = time.Now()
 	var errDate error
 	input.RealErrorBudget, errDate = utils.DowntimeAcrossDays(SLO.OpenHour, SLO.CloseHour, input.CreatedAt, input.ErrorBudgetSpent)
-	log.Println(input.RealErrorBudget)
+
 	if errDate != nil {
 		return errors.BadRequest(errDate.Error()).AddDebug(errDate)
 	}
