@@ -20,6 +20,7 @@ type Incident struct {
 	State             string     `json:"state"`
 	CreatedAt         *time.Time `json:"created_at,omitempty" sql:"default:current_timestamp"`
 	ErrorBudgetSpent  float32    `json:"err_budget_spent"`
+	RealErrorBudget   float32    `json:"real_err_budget_spent"`
 	MarkFalsePositive bool       `json:"mark_false_positive"`
 }
 
@@ -32,6 +33,7 @@ type IncidentReq struct {
 	Alertsource       string  `json:"alertsource"`
 	State             string  `json:"state"`
 	ErrorBudgetSpent  float32 `json:"err_budget_spent"`
+	RealErrorBudget   float32 `json:"real_err_budget_spent"`
 	MarkFalsePositive bool    `json:"mark_false_positive"`
 }
 
