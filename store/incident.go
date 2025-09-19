@@ -3,7 +3,7 @@ package store
 import (
 	"slo-tracker/pkg/errors"
 	"slo-tracker/schema"
-	"strings"
+	"slo-tracker/utils"
 
 	"gorm.io/gorm"
 )
@@ -32,10 +32,14 @@ func (cs *IncidentStore) All(SLOID uint) ([]*schema.Incident, *errors.AppError) 
 
 func (cs *IncidentStore) GetByYearMonth(SLOID uint, yearMonthStr string) ([]*schema.Incident, *errors.AppError) {
 	var Incidents []*schema.Incident
-	year := strings.Split(yearMonthStr, "-")[0]
-	month := strings.Split(yearMonthStr, "-")[1]
 
-	if err := cs.DB.Order("created_at desc").Where("EXTRACT(YEAR FROM created_at) = ? AND EXTRACT(MONTH FROM created_at) = ?", year, month).Find(&Incidents, "slo_id=?", SLOID).Error; err != nil {
+	year, month, err := utils.ParseYearMonth(yearMonthStr)
+
+	if err != nil {
+		return nil, errors.BadRequest("Year and Month are not valid")
+	}
+
+	if err = cs.DB.Order("created_at desc").Where("EXTRACT(YEAR FROM created_at) = ? AND EXTRACT(MONTH FROM created_at) = ?", year, month).Find(&Incidents, "slo_id=?", SLOID).Error; err != nil {
 		return nil, errors.InternalServerStd().AddDebug(err)
 	}
 
@@ -56,9 +60,9 @@ func (cs *IncidentStore) GetByID(incidentID uint) (*schema.Incident, *errors.App
 }
 
 // GetBySLIName returns the matched record for the given SLI
-func (cs *IncidentStore) GetBySLIName(sloID uint, sliName string) (*schema.Incident, *errors.AppError) {
+func (cs *IncidentStore) GetBySLIName(SLOID uint, sliName string) (*schema.Incident, *errors.AppError) {
 	var incident schema.Incident
-	if err := cs.DB.First(&incident, "state=? AND sli_name=? AND slo_id=?", "open", sliName, sloID).Error; err != nil {
+	if err := cs.DB.First(&incident, "state=? AND sli_name=? AND slo_id=?", "open", sliName, SLOID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, errors.InternalServerStd().AddDebug(err)
 		}
@@ -77,6 +81,7 @@ func (cs *IncidentStore) Create(req *schema.IncidentReq) (*schema.Incident, *err
 		Alertsource:      req.Alertsource,
 		State:            req.State,
 		ErrorBudgetSpent: req.ErrorBudgetSpent,
+		RealErrorBudget:  req.RealErrorBudget,
 	}
 	if err := cs.DB.Save(incident).Error; err != nil {
 		return nil, errors.InternalServerStd().AddDebug(err)
@@ -90,16 +95,11 @@ func (cs *IncidentStore) Update(incident *schema.Incident, update *schema.Incide
 
 	var err *errors.AppError
 
-	if incident.MarkFalsePositive && !update.MarkFalsePositive {
-		err = cs.SLOConn.CutErrBudget(incident.SLOID, incident.ErrorBudgetSpent)
-	}
-
 	if !incident.MarkFalsePositive && update.MarkFalsePositive {
 		// Close the open incident if it's being marked as false positive
 		if update.State == "open" {
 			update.State = "closed"
 		}
-		err = cs.SLOConn.CutErrBudget(incident.SLOID, -incident.ErrorBudgetSpent)
 	}
 
 	if err != nil {
