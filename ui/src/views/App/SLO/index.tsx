@@ -35,7 +35,10 @@ const SLO: React.FC<IProps> = ({ activeSLO, ...props }) => {
     activeSLO,
     selectedMonth ? selectedMonth.format('YYYY-MM') : undefined
   );
-  const { SLO, refreshSLO } = useGetSLO(activeSLO);
+  const { SLO, refreshSLO } = useGetSLO(
+    activeSLO,
+    selectedMonth ? selectedMonth.format('YYYY-MM') : undefined
+);
   const {
     incidentSummary,
     errBudgetOverTime,
