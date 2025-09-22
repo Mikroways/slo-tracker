@@ -5,7 +5,6 @@ import (
 	"slo-tracker/schema"
 
 	// appstore "slo-tracker/store"
-	apputils "slo-tracker/utils"
 
 	"gorm.io/gorm"
 )
@@ -42,10 +41,6 @@ func (cs *SLOStore) GetByID(SLOID uint) (*schema.SLO, *errors.AppError) {
 		return nil, errors.InternalServerStd().AddDebug(err)
 	}
 
-	// calculate current slo based on RemainingErrBudget
-	totalDowntimeInSec := (apputils.CalculateErrBudget(SLO.TargetSLO) - SLO.RemainingErrBudget) * 60
-	SLO.CurrentSLO = ((31536000 - totalDowntimeInSec) / 31536000) * 100
-
 	return &SLO, nil
 }
 
@@ -59,10 +54,6 @@ func (cs *SLOStore) GetByName(SLOName string) (*schema.SLO, *errors.AppError) {
 		return nil, errors.InternalServerStd().AddDebug(err)
 	}
 
-	// calculate current slo based on RemainingErrBudget
-	totalDowntimeInSec := (apputils.CalculateErrBudget(SLO.TargetSLO) - SLO.RemainingErrBudget) * 60
-	SLO.CurrentSLO = ((31536000 - totalDowntimeInSec) / 31536000) * 100
-
 	return &SLO, nil
 }
 
@@ -70,12 +61,10 @@ func (cs *SLOStore) GetByName(SLOName string) (*schema.SLO, *errors.AppError) {
 func (cs *SLOStore) Create(req *schema.SLO) (*schema.SLO, *errors.AppError) {
 
 	slo := &schema.SLO{
-		SLOName:            req.SLOName,
-		TargetSLO:          req.TargetSLO,
-		CurrentSLO:         req.CurrentSLO,
-		RemainingErrBudget: req.RemainingErrBudget,
-		OpenHour:           req.OpenHour,
-		CloseHour:          req.CloseHour,
+		SLOName:   req.SLOName,
+		TargetSLO: req.TargetSLO,
+		OpenHour:  req.OpenHour,
+		CloseHour: req.CloseHour,
 	}
 	if err := cs.DB.Save(slo).Error; err != nil {
 		return nil, errors.InternalServerStd().AddDebug(err)
@@ -97,25 +86,5 @@ func (cs *SLOStore) Delete(SLO *schema.SLO) *errors.AppError {
 	if err := cs.DB.Delete(&SLO).Error; err != nil {
 		return errors.InternalServerStd().AddDebug(err)
 	}
-	return nil
-}
-
-// CutErrBudget subtract the downtime mins from error budget
-func (cs *SLOStore) CutErrBudget(SLOID uint, downtimeInMins float32) *errors.AppError {
-
-	sloRecord, err := cs.GetByID(SLOID)
-
-	if err != nil {
-		return errors.InternalServerStd().AddDebug(err)
-	}
-
-	updatedSLOrecord := sloRecord
-	updatedSLOrecord.RemainingErrBudget -= downtimeInMins
-	updatedSLOrecord, err = cs.Update(sloRecord, updatedSLOrecord)
-
-	if err != nil {
-		return errors.InternalServerStd().AddDebug(err)
-	}
-
 	return nil
 }

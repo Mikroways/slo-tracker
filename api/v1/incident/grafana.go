@@ -22,6 +22,7 @@ func createGrafanaIncidentHandler(w http.ResponseWriter, r *http.Request) *error
 	// fetch the slo_id from context and add it to incident creation request
 	ctx := r.Context()
 	SLOID, _ := ctx.Value("SLOID").(uint)
+	SLO, _ := ctx.Value("SLO").(*schema.SLO)
 
 	if input.State == "alerting" {
 		incident, _ := store.Incident().GetBySLIName(SLOID, input.RuleName)
@@ -48,11 +49,9 @@ func createGrafanaIncidentHandler(w http.ResponseWriter, r *http.Request) *error
 		updatedIncident := incident
 		updatedIncident.State = "closed"
 		updatedIncident.ErrorBudgetSpent = float32(time.Since(*incident.CreatedAt).Minutes())
+		updatedIncident.RealErrorBudget, _ = utils.DowntimeAcrossDays(SLO.OpenHour, SLO.CloseHour, *incident.CreatedAt, updatedIncident.ErrorBudgetSpent)
 
 		updated, _ := store.Incident().Update(incident, updatedIncident) // TODO: error handling
-
-		// deduct error budget with incident downtime
-		store.SLO().CutErrBudget(updated.SLOID, updatedIncident.ErrorBudgetSpent)
 
 		respond.Created(w, updated)
 	}
