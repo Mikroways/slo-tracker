@@ -9,6 +9,7 @@ CREATE TABLE "public"."incident_reqs" (
   "alertsource" text NULL,
   "state" text NULL,
   "error_budget_spent" numeric NULL,
+  "real_error_budget" numeric NULL,
   "mark_false_positive" boolean NULL,
   PRIMARY KEY ("id")
 );
@@ -25,6 +26,7 @@ CREATE TABLE "public"."incidents" (
   "alertsource" text NULL,
   "state" text NULL,
   "error_budget_spent" numeric NULL,
+  "real_error_budget" numeric NULL,
   "mark_false_positive" boolean NULL,
   PRIMARY KEY ("id")
 );
@@ -40,8 +42,6 @@ CREATE TABLE "public"."slos" (
   "open_hour" time NULL,
   "close_hour" time NULL,
   "target_slo" numeric NULL,
-  "current_slo" numeric NULL,
-  "remaining_err_budget" numeric NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "uni_slos_slo_name" UNIQUE ("slo_name")
 );

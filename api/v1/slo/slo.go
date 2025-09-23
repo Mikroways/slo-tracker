@@ -3,6 +3,7 @@ package slo
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"slo-tracker/pkg/errors"
 	"slo-tracker/pkg/respond"
@@ -17,7 +18,21 @@ func getAllSLOsHandler(w http.ResponseWriter, r *http.Request) *errors.AppError 
 		return err
 	}
 
-	respond.OK(w, slos)
+	// this is for backward compatibility with FE
+	slosResponse := make([]schema.SLOResponse, len(slos))
+	for i, slo := range slos {
+		slosResponse[i] = schema.SLOResponse{
+			ID:                 slo.ID,
+			SLOName:            slo.SLOName,
+			OpenHour:           slo.OpenHour,
+			CloseHour:          slo.CloseHour,
+			TargetSLO:          slo.TargetSLO,
+			CurrentSLO:         0,
+			RemainingErrBudget: 0,
+		}
+	}
+
+	respond.OK(w, slosResponse)
 	return nil
 }
 
@@ -28,8 +43,6 @@ func createSLOHandler(w http.ResponseWriter, r *http.Request) *errors.AppError {
 	if err := utils.Decode(r, &input); err != nil {
 		return errors.BadRequest(err.Error()).AddDebug(err)
 	}
-
-	input.RemainingErrBudget = utils.CalculateErrBudget(input.TargetSLO)
 
 	slo, err := store.SLO().Create(&input)
 	if err != nil {
@@ -45,7 +58,35 @@ func getSLOHandler(w http.ResponseWriter, r *http.Request) *errors.AppError {
 	ctx := r.Context()
 	SLO, _ := ctx.Value("SLO").(*schema.SLO)
 
-	respond.OK(w, SLO)
+	yearMonthStr := r.URL.Query().Get("yearMonth")
+
+	if yearMonthStr == "" { // parameter not present or is empty, return all incidents
+		return errors.BadRequest("parameter 'yearMonth' must be present and must not be empty")
+	} else {
+		_, err := time.Parse("2006-01", yearMonthStr)
+		if err != nil {
+			return errors.BadRequest("Error parsing yearMonth, parameter should be like '2025-08'").AddDebug(err)
+		}
+	}
+
+	incidents, err := store.Incident().GetByYearMonth(SLO.ID, yearMonthStr)
+	if err != nil {
+		return err
+	}
+
+	remaningErrBudget, currentSLO := utils.CalculateMonthlyErrBudget(SLO, incidents, yearMonthStr)
+
+	SloResponse := schema.SLOResponse{
+		ID:                 SLO.ID,
+		SLOName:            SLO.SLOName,
+		OpenHour:           SLO.OpenHour,
+		CloseHour:          SLO.CloseHour,
+		TargetSLO:          SLO.TargetSLO,
+		CurrentSLO:         currentSLO,
+		RemainingErrBudget: remaningErrBudget,
+	}
+
+	respond.OK(w, &SloResponse)
 	return nil
 }
 
@@ -66,11 +107,7 @@ func updateSLOHandler(w http.ResponseWriter, r *http.Request) *errors.AppError {
 	// Consider already spent error budget when isReset set to false
 	// If not, reset Error budget completely and delete past incidents
 	if isReset {
-		input.RemainingErrBudget = utils.CalculateErrBudget(input.TargetSLO)
 		store.IncidentConn.Delete(slo.ID)
-	} else {
-		alreadySpentErrBudget := utils.CalculateErrBudget(slo.TargetSLO) - slo.RemainingErrBudget
-		input.RemainingErrBudget = utils.CalculateErrBudget(input.TargetSLO) - alreadySpentErrBudget
 	}
 
 	updated, err := store.SLO().Update(slo, &input)

@@ -4,7 +4,7 @@ import SLOService from "../services/service.slo";
 
 const _sloService = new SLOService();
 
-const useGetSLO = (activeSLO: ISLO | null) => {
+const useGetSLO = (activeSLO: ISLO | null, yearMonth?: string) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [SLO, setSLO] = useState<ISLO | null>(activeSLO);
@@ -16,7 +16,7 @@ const useGetSLO = (activeSLO: ISLO | null) => {
     setError(null);
 
     try {
-      const response = await _sloService.get(activeSLO.id);
+      const response = await _sloService.get(activeSLO.id, {yearMonth});
       setSLO(response.data.data);
     } catch (err) {
       console.log(err)
@@ -31,7 +31,7 @@ const useGetSLO = (activeSLO: ISLO | null) => {
       await getSLO();
     })()
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeSLO]);
+  }, [activeSLO, yearMonth]);
 
   return {
     SLO,

@@ -41,6 +41,11 @@ const tableColumns = (
     key: 'err_budget_spent',
   },
   {
+    title: 'Real Err budget spent(min)',
+    dataIndex: 'real_err_budget_spent',
+    key: 'real_err_budget_spent',
+  },
+  {
     title: 'Mark false positive',
     key: 'action',
     render: (sli: IIncident) => (

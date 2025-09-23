@@ -3,7 +3,7 @@ import { IIncident } from "../interfaces/IIncident";
 import { ISLO } from "../interfaces/ISLO";
 import IncidentService from "../services/service.incident";
 
-const useGetSLIs = (slo: ISLO | null) => {
+const useGetSLIs = (slo: ISLO | null, yearMonth?: string) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [SLIs, setSLIs] = useState<IIncident[]>([]);
@@ -17,7 +17,7 @@ const useGetSLIs = (slo: ISLO | null) => {
     const _incidentService = new IncidentService(slo.id);
 
     try {
-      const response = await _incidentService.get();
+      const response = await _incidentService.get({yearMonth});
       setSLIs(response.data.data);
     } catch (err) {
       console.log(err);
@@ -32,7 +32,7 @@ const useGetSLIs = (slo: ISLO | null) => {
       await getSLI();
     })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slo])
+  }, [slo, yearMonth])
 
   return {
     SLIs,

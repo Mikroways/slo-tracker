@@ -23,6 +23,7 @@ func createNewrelicIncidentHandler(w http.ResponseWriter, r *http.Request) *erro
 	// fetch the slo_id from context and add it to incident creation request
 	ctx := r.Context()
 	SLOID, _ := ctx.Value("SLOID").(uint)
+	SLO, _ := ctx.Value("SLO").(*schema.SLO)
 
 	if input.CurrentState == "open" {
 
@@ -54,9 +55,7 @@ func createNewrelicIncidentHandler(w http.ResponseWriter, r *http.Request) *erro
 		updatedIncident.State = "closed"
 		updatedIncident.ErrorBudgetSpent = float32(time.Now().Sub(*incident.CreatedAt).Minutes())
 		updated, _ := store.Incident().Update(incident, updatedIncident) // TODO: error handling
-
-		// deduct error budget with incident downtime
-		err = store.SLO().CutErrBudget(updated.SLOID, updatedIncident.ErrorBudgetSpent)
+		updatedIncident.RealErrorBudget, _ = utils.DowntimeAcrossDays(SLO.OpenHour, SLO.CloseHour, *incident.CreatedAt, updatedIncident.ErrorBudgetSpent)
 
 		respond.Created(w, updated)
 
