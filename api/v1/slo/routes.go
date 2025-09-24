@@ -27,6 +27,7 @@ func Init(r chi.Router) {
 
 // ROUTE: {host}/v1/slo/:sloID/*
 func sloIDSubRoutes(r chi.Router) {
+	r.Method(http.MethodGet, "/workingschedule", api.Handler(getWorkingSchedule))
 	r.Method(http.MethodGet, "/", api.Handler(getSLOHandler))
 	r.Method(http.MethodPatch, "/", api.Handler(updateSLOHandler))
 	r.Method(http.MethodDelete, "/", api.Handler(deleteSLOHandler))

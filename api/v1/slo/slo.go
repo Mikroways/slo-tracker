@@ -22,10 +22,10 @@ func getAllSLOsHandler(w http.ResponseWriter, r *http.Request) *errors.AppError 
 	slosResponse := make([]schema.SLOResponse, len(slos))
 	for i, slo := range slos {
 		slosResponse[i] = schema.SLOResponse{
-			ID:                 slo.ID,
-			SLOName:            slo.SLOName,
-			OpenHour:           slo.OpenHour,
-			CloseHour:          slo.CloseHour,
+			ID:      slo.ID,
+			SLOName: slo.SLOName,
+			// OpenHour:           slo.OpenHour,
+			// CloseHour:          slo.CloseHour,
 			TargetSLO:          slo.TargetSLO,
 			CurrentSLO:         0,
 			RemainingErrBudget: 0,
@@ -38,15 +38,32 @@ func getAllSLOsHandler(w http.ResponseWriter, r *http.Request) *errors.AppError 
 
 // creates a new slo
 func createSLOHandler(w http.ResponseWriter, r *http.Request) *errors.AppError {
-	var input schema.SLO
+	var input schema.SLORequest
 
 	if err := utils.Decode(r, &input); err != nil {
 		return errors.BadRequest(err.Error()).AddDebug(err)
 	}
 
-	slo, err := store.SLO().Create(&input)
+	slo, err := store.SLO().Create(&schema.SLO{
+		SLOName:   input.SLOName,
+		TargetSLO: input.TargetSLO,
+	})
+
 	if err != nil {
 		return err
+	}
+
+	for _, workingDay := range input.Days {
+		_, err := store.SLO().CreateWorkingHour(&schema.StoreWorkingHour{
+			SLOID:     slo.ID,
+			Weekday:   workingDay.Weekday,
+			OpenHour:  workingDay.OpenHour,
+			CloseHour: workingDay.CloseHour,
+		})
+
+		if err != nil {
+			return err
+		}
 	}
 
 	respond.Created(w, slo)
@@ -74,13 +91,18 @@ func getSLOHandler(w http.ResponseWriter, r *http.Request) *errors.AppError {
 		return err
 	}
 
-	remaningErrBudget, currentSLO := utils.CalculateMonthlyErrBudget(SLO, incidents, yearMonthStr)
+	ws, err := store.SLO().GetWorkingSchedule(SLO.ID)
+	if err != nil {
+		return err
+	}
+
+	remaningErrBudget, currentSLO := utils.CalculateMonthlyErrBudget(SLO, incidents, yearMonthStr, *ws)
 
 	SloResponse := schema.SLOResponse{
-		ID:                 SLO.ID,
-		SLOName:            SLO.SLOName,
-		OpenHour:           SLO.OpenHour,
-		CloseHour:          SLO.CloseHour,
+		ID:      SLO.ID,
+		SLOName: SLO.SLOName,
+		// OpenHour:           SLO.OpenHour,
+		// CloseHour:          SLO.CloseHour,
 		TargetSLO:          SLO.TargetSLO,
 		CurrentSLO:         currentSLO,
 		RemainingErrBudget: remaningErrBudget,
@@ -92,7 +114,7 @@ func getSLOHandler(w http.ResponseWriter, r *http.Request) *errors.AppError {
 
 // Updates the slo
 func updateSLOHandler(w http.ResponseWriter, r *http.Request) *errors.AppError {
-	var input schema.SLO
+	var input schema.SLORequest
 	var isReset bool = true
 
 	ctx := r.Context()
@@ -110,9 +132,28 @@ func updateSLOHandler(w http.ResponseWriter, r *http.Request) *errors.AppError {
 		store.IncidentConn.Delete(slo.ID)
 	}
 
-	updated, err := store.SLO().Update(slo, &input)
+	updated, err := store.SLO().Update(slo, &schema.SLO{
+		SLOName:   input.SLOName,
+		TargetSLO: input.TargetSLO,
+	})
 	if err != nil {
 		return err
+	}
+
+	// delete working hours
+	store.SLO().DeleteWorkingHours(slo.ID)
+
+	for _, workingDay := range input.Days {
+		_, err := store.SLO().CreateWorkingHour(&schema.StoreWorkingHour{
+			SLOID:     slo.ID,
+			Weekday:   workingDay.Weekday,
+			OpenHour:  workingDay.OpenHour,
+			CloseHour: workingDay.CloseHour,
+		})
+
+		if err != nil {
+			return err
+		}
 	}
 
 	respond.OK(w, updated)
@@ -133,5 +174,34 @@ func deleteSLOHandler(w http.ResponseWriter, r *http.Request) *errors.AppError {
 	}
 
 	respond.OK(w, slo)
+	return nil
+}
+
+func getWorkingSchedule(w http.ResponseWriter, r *http.Request) *errors.AppError {
+
+	ctx := r.Context()
+	slo, _ := ctx.Value("SLO").(*schema.SLO)
+
+	ws, err := store.SLO().GetWorkingSchedule(slo.ID)
+
+	if err != nil {
+		return err
+	}
+
+	sloRequest := &schema.SLORequest{
+		SLOName:   slo.SLOName,
+		TargetSLO: slo.TargetSLO,
+		Days:      []schema.WorkingSchedule{},
+	}
+
+	for _, w := range *ws {
+		sloRequest.Days = append(sloRequest.Days, schema.WorkingSchedule{
+			Weekday:   w.Weekday,
+			OpenHour:  w.OpenHour,
+			CloseHour: w.CloseHour,
+		})
+	}
+
+	respond.OK(w, sloRequest)
 	return nil
 }
