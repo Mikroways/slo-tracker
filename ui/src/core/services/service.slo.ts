@@ -10,12 +10,14 @@ class SLOService {
 
   get = (sloId: number, params?: {yearMonth?: string}) => axios.get<IResponse<ISLO>>(`${this._api}/${sloId}`, { params });
 
-  create = (data: Pick<ISLO, 'slo_name' | 'target_slo' | 'open_hour' | 'close_hour' >) =>
+  getWorkingSchedule = (sloId: number) => axios.get<IResponse<ISLO[]>>(`${this._api}/${sloId}/workingschedule`);
+
+  create = (data: Pick<ISLO, 'slo_name' | 'target_slo' | 'working_days'>) =>
     axios.post<IResponse<ISLO>>(this._api, data);
 
   update = (
     sloId: number,
-    data: Pick<ISLO, 'slo_name' | 'target_slo'>,
+    data: Pick<ISLO, 'slo_name' | 'target_slo' | 'working_days'>,
     isReset: boolean
   ) =>
     axios.patch<IResponse<ISLO>>(

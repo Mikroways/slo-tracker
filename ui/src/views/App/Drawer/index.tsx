@@ -16,7 +16,7 @@ const SLODrawer: React.FC<IProps> = ({ type, show, ...props }) => {
   const title = type === 'create' ? 'Create a new SLO' : 'Update SLO';
 
   return (
-    <Drawer title={title} visible={show} onClose={props.onClose} width={400}>
+    <Drawer title={title} visible={show} onClose={props.onClose} width={550}>
       {type === 'create' && (
         <CreateSLO
           refreshSLOs={props.refreshSLOs}
@@ -28,6 +28,7 @@ const SLODrawer: React.FC<IProps> = ({ type, show, ...props }) => {
           activeSLO={props.activeSLO}
           refreshSLOs={props.refreshSLOs}
           closeDrawer={props.onClose}
+          open={show}
         />
       )}
     </Drawer>
