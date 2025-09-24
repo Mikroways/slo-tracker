@@ -60,17 +60,20 @@ func (cs *SLOStore) GetByName(SLOName string) (*schema.SLO, *errors.AppError) {
 // Create a new SLO
 func (cs *SLOStore) Create(req *schema.SLO) (*schema.SLO, *errors.AppError) {
 
-	slo := &schema.SLO{
-		SLOName:   req.SLOName,
-		TargetSLO: req.TargetSLO,
-		OpenHour:  req.OpenHour,
-		CloseHour: req.CloseHour,
-	}
-	if err := cs.DB.Save(slo).Error; err != nil {
+	if err := cs.DB.Save(req).Error; err != nil {
 		return nil, errors.InternalServerStd().AddDebug(err)
 	}
 
-	return slo, nil
+	return req, nil
+}
+
+func (cs *SLOStore) CreateWorkingHour(req *schema.StoreWorkingHour) (*schema.StoreWorkingHour, *errors.AppError) {
+
+	if err := cs.DB.Save(req).Error; err != nil {
+		return nil, errors.InternalServerStd().AddDebug(err)
+	}
+
+	return req, nil
 }
 
 // Update the SLO record..
@@ -84,6 +87,27 @@ func (cs *SLOStore) Update(SLO *schema.SLO, update *schema.SLO) (*schema.SLO, *e
 // Delete the SLO record..
 func (cs *SLOStore) Delete(SLO *schema.SLO) *errors.AppError {
 	if err := cs.DB.Delete(&SLO).Error; err != nil {
+		return errors.InternalServerStd().AddDebug(err)
+	}
+	return nil
+}
+
+func (cs *SLOStore) GetWorkingSchedule(SLOID uint) (*[]schema.StoreWorkingHour, *errors.AppError) {
+
+	var ws []schema.StoreWorkingHour
+	if err := cs.DB.Where("slo_id=?", SLOID).Find(&ws).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, errors.BadRequest("invalid SLO id").AddDebug(err)
+		}
+		return nil, errors.InternalServerStd().AddDebug(err)
+	}
+
+	return &ws, nil
+}
+
+// Delete the SLO record..
+func (cs *SLOStore) DeleteWorkingHours(SLOID uint) *errors.AppError {
+	if err := cs.DB.Where("slo_id=?", SLOID).Delete(&schema.StoreWorkingHour{}).Error; err != nil {
 		return errors.InternalServerStd().AddDebug(err)
 	}
 	return nil

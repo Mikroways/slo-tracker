@@ -33,6 +33,9 @@ type SLO interface {
 	GetByName(SLOName string) (*schema.SLO, *errors.AppError)
 	Update(SLO *schema.SLO, update *schema.SLO) (*schema.SLO, *errors.AppError)
 	Delete(SLO *schema.SLO) *errors.AppError
+	CreateWorkingHour(req *schema.StoreWorkingHour) (*schema.StoreWorkingHour, *errors.AppError)
+	GetWorkingSchedule(SLOID uint) (*[]schema.StoreWorkingHour, *errors.AppError)
+	DeleteWorkingHours(SLOID uint) *errors.AppError
 }
 
 type Database interface {
