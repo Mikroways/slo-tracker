@@ -52,12 +52,17 @@ func createPromIncidentHandler(w http.ResponseWriter, r *http.Request) *errors.A
 				continue
 			}
 
+			ws, err := store.SLO().GetWorkingSchedule(SLO.ID)
+			if err != nil {
+				return err
+			}
+
 			updatedIncident := incident
 			updatedIncident.State = "closed"
 			updatedIncident.ErrorBudgetSpent = float32(time.Now().Sub(*incident.CreatedAt).Minutes())
 
 			updated, _ := store.Incident().Update(incident, updatedIncident) // TODO: error handling
-			updatedIncident.RealErrorBudget, _ = utils.DowntimeAcrossDays(SLO.OpenHour, SLO.CloseHour, *incident.CreatedAt, updatedIncident.ErrorBudgetSpent)
+			updatedIncident.RealErrorBudget, _ = utils.DowntimeAcrossDays(*incident.CreatedAt, updatedIncident.ErrorBudgetSpent, *ws)
 
 			respond.Created(w, updated)
 		}

@@ -54,9 +54,14 @@ func createIncidentHandler(w http.ResponseWriter, r *http.Request) *errors.AppEr
 	input.SLOID, _ = ctx.Value("SLOID").(uint)
 	SLO, _ := ctx.Value("SLO").(*schema.SLO)
 
+	ws, err := store.SLO().GetWorkingSchedule(SLO.ID)
+	if err != nil {
+		return err
+	}
+
 	input.CreatedAt = time.Now()
 	var errDate error
-	input.RealErrorBudget, errDate = utils.DowntimeAcrossDays(SLO.OpenHour, SLO.CloseHour, input.CreatedAt, input.ErrorBudgetSpent)
+	input.RealErrorBudget, errDate = utils.DowntimeAcrossDays(input.CreatedAt, input.ErrorBudgetSpent, *ws)
 
 	if errDate != nil {
 		return errors.BadRequest(errDate.Error()).AddDebug(errDate)
