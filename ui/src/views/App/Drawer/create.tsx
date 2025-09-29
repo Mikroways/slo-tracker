@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button, Form, Input, TimePicker, Row, Col, Checkbox } from 'antd';
+import dayjs from 'dayjs';
 import SLOService from '../../../core/services/service.slo';
 import openNotification from '../../../core/helpers/notification';
 
@@ -81,10 +82,26 @@ const CreateSLO: React.FC<IProps> = (props) => {
 
       <div style={{ marginBottom: 16, fontWeight: 500 }}>Days & Hours</div>
       {DAYS.map(day => (
-        <Row key={day} gutter={8} align="middle" style={{ marginBottom: 8 }}>
-          <Col>
+        <Row key={day} gutter={8} align="middle"  justify="start" style={{ marginBottom: 8 }}>
+          <Col style={{ minWidth: 120 }}>
             <Form.Item name={`${day}_enabled`} valuePropName="checked" noStyle>
-              <Checkbox>{day.charAt(0).toUpperCase() + day.slice(1)}</Checkbox>
+              <Checkbox
+              onChange={e => {
+                if (e.target.checked) {
+                  form.setFieldsValue({
+                    [`${day}_open_hour`]: dayjs().hour(0).minute(0),
+                    [`${day}_close_hour`]: dayjs().hour(23).minute(59),
+                  });
+                } else {
+                  form.setFieldsValue({
+                    [`${day}_open_hour`]: null,
+                    [`${day}_close_hour`]: null,
+                  });
+                }
+              }}
+              >  
+                {day.charAt(0).toUpperCase() + day.slice(1)}
+              </Checkbox>
             </Form.Item>
           </Col>
           <Col>
