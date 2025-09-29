@@ -36,7 +36,7 @@ func getAllSLOsHandler(w http.ResponseWriter, r *http.Request) *errors.AppError 
 
 // creates a new slo
 func createSLOHandler(w http.ResponseWriter, r *http.Request) *errors.AppError {
-	var input schema.SLORequest
+	var input schema.SLOPayload
 
 	if err := utils.Decode(r, &input); err != nil {
 		return errors.BadRequest(err.Error()).AddDebug(err)
@@ -110,7 +110,7 @@ func getSLOHandler(w http.ResponseWriter, r *http.Request) *errors.AppError {
 
 // Updates the slo
 func updateSLOHandler(w http.ResponseWriter, r *http.Request) *errors.AppError {
-	var input schema.SLORequest
+	var input schema.SLOPayload
 	var isReset bool = true
 
 	ctx := r.Context()
@@ -184,20 +184,20 @@ func getWorkingSchedule(w http.ResponseWriter, r *http.Request) *errors.AppError
 		return err
 	}
 
-	sloRequest := &schema.SLORequest{
+	sloPayload := &schema.SLOPayload{
 		SLOName:   slo.SLOName,
 		TargetSLO: slo.TargetSLO,
 		Days:      []schema.WorkingDaySchedule{},
 	}
 
 	for _, w := range *ws {
-		sloRequest.Days = append(sloRequest.Days, schema.WorkingDaySchedule{
+		sloPayload.Days = append(sloPayload.Days, schema.WorkingDaySchedule{
 			Weekday:   w.Weekday,
 			OpenHour:  w.OpenHour,
 			CloseHour: w.CloseHour,
 		})
 	}
 
-	respond.OK(w, sloRequest)
+	respond.OK(w, sloPayload)
 	return nil
 }

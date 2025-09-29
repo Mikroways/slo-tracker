@@ -39,11 +39,20 @@ CREATE TABLE "public"."slos" (
   "updated_at" timestamptz NULL,
   "deleted_at" timestamptz NULL,
   "slo_name" text NOT NULL,
-  "open_hour" time NULL,
-  "close_hour" time NULL,
   "target_slo" numeric NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "uni_slos_slo_name" UNIQUE ("slo_name")
 );
 -- Create index "idx_slos_deleted_at" to table: "slos"
 CREATE INDEX "idx_slos_deleted_at" ON "public"."slos" ("deleted_at");
+-- Create "store_working_schedules" table
+CREATE TABLE "public"."store_working_schedules" (
+  "id" bigserial NOT NULL,
+  "slo_id" bigint NULL,
+  "weekday" bigint NULL,
+  "open_hour" time NULL,
+  "close_hour" time NULL,
+  PRIMARY KEY ("id")
+);
+-- Create index "idx_store_working_schedules_slo_id" to table: "store_working_schedules"
+CREATE INDEX "idx_store_working_schedules_slo_id" ON "public"."store_working_schedules" ("slo_id");

@@ -19,14 +19,12 @@ type SLO struct {
 type SLOResponse struct {
 	ID                 uint    `json:"id,omitempty"`
 	SLOName            string  `json:"slo_name"`
-	OpenHour           string  `json:"open_hour"`
-	CloseHour          string  `json:"close_hour"`
 	TargetSLO          float32 `json:"target_slo"`
 	CurrentSLO         float32 `json:"current_slo"`
 	RemainingErrBudget float32 `json:"remaining_err_budget"`
 }
 
-type SLORequest struct {
+type SLOPayload struct {
 	SLOName   string               `json:"slo_name"`
 	TargetSLO float32              `json:"target_slo"`
 	Days      []WorkingDaySchedule `json:"working_days"`
