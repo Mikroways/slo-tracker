@@ -15,7 +15,7 @@ func CalculateErrBudget(targetSLOinPerc float32) float32 {
 	return errBudgetInMin
 }
 
-func CalculateMonthlyErrBudget(SLO *schema.SLO, incidents []*schema.Incident, yearMonth string, schedule []schema.StoreWorkingHour) (float32, float32) {
+func CalculateMonthlyErrBudget(SLO *schema.SLO, incidents []*schema.Incident, yearMonth string, schedule []schema.StoreWorkingSchedule) (float32, float32) {
 	year, month, _ := ParseYearMonth(yearMonth)
 
 	// First day of the given month
@@ -65,7 +65,7 @@ func ParseYearMonth(yearMonth string) (int, int, error) {
 	return year, month, nil
 }
 
-func DowntimeAcrossDays(alarmStart time.Time, durationMinutes float32, schedule []schema.StoreWorkingHour) (float32, error) {
+func DowntimeAcrossDays(alarmStart time.Time, durationMinutes float32, schedule []schema.StoreWorkingSchedule) (float32, error) {
 
 	alarmEnd := alarmStart.Add(time.Duration(float64(durationMinutes) * float64(time.Minute)))
 	var totalMinutes float64
@@ -75,7 +75,7 @@ func DowntimeAcrossDays(alarmStart time.Time, durationMinutes float32, schedule 
 	for !currentDay.After(alarmEnd) {
 
 		weekday := int(currentDay.Weekday())
-		var daySchedule *schema.StoreWorkingHour
+		var daySchedule *schema.StoreWorkingSchedule
 
 		// Find the schedule for this weekday
 		for _, s := range schedule {

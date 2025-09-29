@@ -22,10 +22,8 @@ func getAllSLOsHandler(w http.ResponseWriter, r *http.Request) *errors.AppError 
 	slosResponse := make([]schema.SLOResponse, len(slos))
 	for i, slo := range slos {
 		slosResponse[i] = schema.SLOResponse{
-			ID:      slo.ID,
-			SLOName: slo.SLOName,
-			// OpenHour:           slo.OpenHour,
-			// CloseHour:          slo.CloseHour,
+			ID:                 slo.ID,
+			SLOName:            slo.SLOName,
 			TargetSLO:          slo.TargetSLO,
 			CurrentSLO:         0,
 			RemainingErrBudget: 0,
@@ -54,7 +52,7 @@ func createSLOHandler(w http.ResponseWriter, r *http.Request) *errors.AppError {
 	}
 
 	for _, workingDay := range input.Days {
-		_, err := store.SLO().CreateWorkingHour(&schema.StoreWorkingHour{
+		_, err := store.SLO().CreateWorkingSchedule(&schema.StoreWorkingSchedule{
 			SLOID:     slo.ID,
 			Weekday:   workingDay.Weekday,
 			OpenHour:  workingDay.OpenHour,
@@ -99,10 +97,8 @@ func getSLOHandler(w http.ResponseWriter, r *http.Request) *errors.AppError {
 	remaningErrBudget, currentSLO := utils.CalculateMonthlyErrBudget(SLO, incidents, yearMonthStr, *ws)
 
 	SloResponse := schema.SLOResponse{
-		ID:      SLO.ID,
-		SLOName: SLO.SLOName,
-		// OpenHour:           SLO.OpenHour,
-		// CloseHour:          SLO.CloseHour,
+		ID:                 SLO.ID,
+		SLOName:            SLO.SLOName,
 		TargetSLO:          SLO.TargetSLO,
 		CurrentSLO:         currentSLO,
 		RemainingErrBudget: remaningErrBudget,
@@ -141,10 +137,10 @@ func updateSLOHandler(w http.ResponseWriter, r *http.Request) *errors.AppError {
 	}
 
 	// delete working hours
-	store.SLO().DeleteWorkingHours(slo.ID)
+	store.SLO().DeleteWorkingSchedule(slo.ID)
 
 	for _, workingDay := range input.Days {
-		_, err := store.SLO().CreateWorkingHour(&schema.StoreWorkingHour{
+		_, err := store.SLO().CreateWorkingSchedule(&schema.StoreWorkingSchedule{
 			SLOID:     slo.ID,
 			Weekday:   workingDay.Weekday,
 			OpenHour:  workingDay.OpenHour,
@@ -191,11 +187,11 @@ func getWorkingSchedule(w http.ResponseWriter, r *http.Request) *errors.AppError
 	sloRequest := &schema.SLORequest{
 		SLOName:   slo.SLOName,
 		TargetSLO: slo.TargetSLO,
-		Days:      []schema.WorkingSchedule{},
+		Days:      []schema.WorkingDaySchedule{},
 	}
 
 	for _, w := range *ws {
-		sloRequest.Days = append(sloRequest.Days, schema.WorkingSchedule{
+		sloRequest.Days = append(sloRequest.Days, schema.WorkingDaySchedule{
 			Weekday:   w.Weekday,
 			OpenHour:  w.OpenHour,
 			CloseHour: w.CloseHour,
