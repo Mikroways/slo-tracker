@@ -15,7 +15,7 @@ func CalculateErrBudget(targetSLOinPerc float32) float32 {
 	return errBudgetInMin
 }
 
-func CalculateMonthlyErrBudget(SLO *schema.SLO, incidents []*schema.Incident, yearMonth string, schedule []schema.StoreWorkingSchedule) (float32, float32) {
+func CalculateMonthlyErrBudget(SLO *schema.SLO, incidents []*schema.Incident, yearMonth string) (float32, float32) {
 	year, month, _ := ParseYearMonth(yearMonth)
 
 	// First day of the given month
@@ -33,8 +33,7 @@ func CalculateMonthlyErrBudget(SLO *schema.SLO, incidents []*schema.Incident, ye
 			continue
 		}
 
-		m, _ := DowntimeAcrossDays(*incident.CreatedAt, incident.RealErrorBudget, schedule)
-		minutesInAlarm += m
+		minutesInAlarm += incident.RealErrorBudget
 	}
 
 	remainingErrBudget := float32(minutesInMonth) - minutesInAlarm

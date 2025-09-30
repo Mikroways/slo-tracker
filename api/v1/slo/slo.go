@@ -89,12 +89,7 @@ func getSLOHandler(w http.ResponseWriter, r *http.Request) *errors.AppError {
 		return err
 	}
 
-	ws, err := store.SLO().GetWorkingSchedule(SLO.ID)
-	if err != nil {
-		return err
-	}
-
-	remaningErrBudget, currentSLO := utils.CalculateMonthlyErrBudget(SLO, incidents, yearMonthStr, *ws)
+	remaningErrBudget, currentSLO := utils.CalculateMonthlyErrBudget(SLO, incidents, yearMonthStr)
 
 	SloResponse := schema.SLOResponse{
 		ID:                 SLO.ID,
