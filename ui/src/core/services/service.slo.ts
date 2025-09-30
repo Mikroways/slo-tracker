@@ -26,6 +26,8 @@ class SLOService {
     );
 
   delete = (sloId: number) => axios.delete(`${this._api}/${sloId}`);
+
+  overview = (params: {yearMonth?: string}) => axios.get(`${this._api}/overview`, {params})
 }
 
 export default SLOService;

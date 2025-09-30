@@ -6,4 +6,6 @@ export interface ISLO {
   updated_at: Date;
   remaining_err_budget: number;
   working_days?: any;
+  num_incidents?: number;
+  num_incidents_false_positive?: number;
 }
