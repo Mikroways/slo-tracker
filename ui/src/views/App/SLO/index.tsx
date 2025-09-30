@@ -87,8 +87,8 @@ const SLO: React.FC<IProps> = ({ activeSLO, ...props }) => {
             />
           </div>
         </Row>
-        <Row>
-          <DatePicker
+        <Row style={{ alignItems: "center" }}>
+          <DatePicker style={{ marginRight: 24 }}
             picker="month"
             format="MMMM YYYY"
             value={selectedMonth}

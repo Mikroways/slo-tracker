@@ -82,7 +82,7 @@ const CreateSLO: React.FC<IProps> = (props) => {
 
       <div style={{ marginBottom: 16, fontWeight: 500 }}>Days & Hours</div>
       {DAYS.map(day => (
-        <Row key={day} gutter={8} align="middle"  justify="start" style={{ marginBottom: 8 }}>
+        <Row key={day} gutter={8} align="middle"  justify="start" style={{ marginBottom: 8, alignItems: "center" }}>
           <Col style={{ minWidth: 120 }}>
             <Form.Item name={`${day}_enabled`} valuePropName="checked" noStyle>
               <Checkbox
