@@ -60,17 +60,11 @@ func (cs *SLOStore) GetByName(SLOName string) (*schema.SLO, *errors.AppError) {
 // Create a new SLO
 func (cs *SLOStore) Create(req *schema.SLO) (*schema.SLO, *errors.AppError) {
 
-	slo := &schema.SLO{
-		SLOName:   req.SLOName,
-		TargetSLO: req.TargetSLO,
-		OpenHour:  req.OpenHour,
-		CloseHour: req.CloseHour,
-	}
-	if err := cs.DB.Save(slo).Error; err != nil {
+	if err := cs.DB.Save(req).Error; err != nil {
 		return nil, errors.InternalServerStd().AddDebug(err)
 	}
 
-	return slo, nil
+	return req, nil
 }
 
 // Update the SLO record..

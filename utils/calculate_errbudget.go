@@ -33,8 +33,7 @@ func CalculateMonthlyErrBudget(SLO *schema.SLO, incidents []*schema.Incident, ye
 			continue
 		}
 
-		m, _ := DowntimeAcrossDays(SLO.OpenHour, SLO.CloseHour, *incident.CreatedAt, incident.ErrorBudgetSpent)
-		minutesInAlarm += m
+		minutesInAlarm += incident.RealErrorBudget
 	}
 
 	remainingErrBudget := float32(minutesInMonth) - minutesInAlarm
@@ -65,16 +64,7 @@ func ParseYearMonth(yearMonth string) (int, int, error) {
 	return year, month, nil
 }
 
-func DowntimeAcrossDays(openStr, closeStr string, alarmStart time.Time, durationMinutes float32) (float32, error) {
-
-	openParsed, err := time.Parse("15:04:05", openStr)
-	if err != nil {
-		return 0, fmt.Errorf("invalid open time: %w", err)
-	}
-	closeParsed, err := time.Parse("15:04:05", closeStr)
-	if err != nil {
-		return 0, fmt.Errorf("invalid close time: %w", err)
-	}
+func DowntimeAcrossDays(alarmStart time.Time, durationMinutes float32, schedule []schema.StoreWorkingSchedule) (float32, error) {
 
 	alarmEnd := alarmStart.Add(time.Duration(float64(durationMinutes) * float64(time.Minute)))
 	var totalMinutes float64
@@ -83,16 +73,36 @@ func DowntimeAcrossDays(openStr, closeStr string, alarmStart time.Time, duration
 
 	for !currentDay.After(alarmEnd) {
 
-		open := time.Date(currentDay.Year(), currentDay.Month(), currentDay.Day(),
-			openParsed.Hour(), openParsed.Minute(), openParsed.Second(), 0, currentDay.Location())
-		close := time.Date(currentDay.Year(), currentDay.Month(), currentDay.Day(),
-			closeParsed.Hour(), closeParsed.Minute(), closeParsed.Second(), 0, currentDay.Location())
+		weekday := int(currentDay.Weekday())
+		var daySchedule *schema.StoreWorkingSchedule
 
-		start := maxTime(open, alarmStart)
-		end := minTime(close, alarmEnd)
+		// Find the schedule for this weekday
+		for _, s := range schedule {
+			if s.Weekday == weekday {
+				daySchedule = &s
+				break
+			}
+		}
 
-		if end.After(start) {
-			totalMinutes += end.Sub(start).Minutes()
+		if daySchedule != nil {
+			// Parse open/close hours
+			openParts := strings.Split(daySchedule.OpenHour, ":")
+			closeParts := strings.Split(daySchedule.CloseHour, ":")
+
+			openHour, _ := time.ParseDuration(fmt.Sprintf("%sh%sm%ss", openParts[0], openParts[1], openParts[2]))
+			closeHour, _ := time.ParseDuration(fmt.Sprintf("%sh%sm%ss", closeParts[0], closeParts[1], closeParts[2]))
+
+			// Create actual time.Time for open/close today
+			dayOpen := time.Date(currentDay.Year(), currentDay.Month(), currentDay.Day(), 0, 0, 0, 0, currentDay.Location()).Add(openHour)
+			dayClose := time.Date(currentDay.Year(), currentDay.Month(), currentDay.Day(), 0, 0, 0, 0, currentDay.Location()).Add(closeHour)
+
+			// Calculate overlap
+			start := maxTime(currentDay, dayOpen)
+			end := minTime(alarmEnd, dayClose)
+
+			if end.After(start) {
+				totalMinutes += end.Sub(start).Minutes()
+			}
 		}
 
 		currentDay = currentDay.AddDate(0, 0, 1)
