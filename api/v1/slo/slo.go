@@ -217,10 +217,6 @@ func getOverview(w http.ResponseWriter, r *http.Request) *errors.AppError {
 	store.DB.Raw(query).Scan(&overviewRes)
 
 	for i, oslo := range overviewRes {
-		ws, err := store.SLO().GetWorkingSchedule(oslo.Id)
-		if err != nil {
-			return err
-		}
 
 		slo, err := store.SLO().GetByID(oslo.Id)
 		if err != nil {
@@ -232,7 +228,7 @@ func getOverview(w http.ResponseWriter, r *http.Request) *errors.AppError {
 			return err
 		}
 
-		rem, c := utils.CalculateMonthlyErrBudget(slo, incidents, yearMonthStr, *ws)
+		rem, c := utils.CalculateMonthlyErrBudget(slo, incidents, yearMonthStr)
 		overviewRes[i].RemErrBudget = rem
 		overviewRes[i].CurrentSlo = c
 	}
