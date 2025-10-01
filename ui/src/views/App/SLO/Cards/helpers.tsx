@@ -12,16 +12,8 @@ export const SLOCards: ISLOCard[] = [
     render: ({ SLO }) => <div>{SLO.target_slo}%</div>,
   },
   {
-    title: 'Window Time',
-    render: ({ SLO }) => <div>{SLO.open_hour} - {SLO.close_hour}</div>,
-  },
-  {
     title: 'Your SLO',
     render: ({ SLO }) => <div>{SLO.current_slo.toFixed(6)}%</div>,
-  },
-  {
-    title: '30 Days Consumption',
-    render: ({ past30Days }) => <div>{past30Days.toFixed(3)} min</div>,
   },
   {
     title: 'Remaining Error Budget',
