@@ -19,6 +19,7 @@ func Init(r chi.Router) {
 
 	store = api.Store
 
+	r.Method(http.MethodGet, "/overview", api.Handler(getOverview))
 	r.Method(http.MethodGet, "/", api.Handler(getAllSLOsHandler))
 	r.Method(http.MethodPost, "/", api.Handler(createSLOHandler))
 	r.With(middleware.SLORequired).
