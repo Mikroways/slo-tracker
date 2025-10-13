@@ -1,7 +1,6 @@
 package slo
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -211,19 +210,18 @@ func getOverview(w http.ResponseWriter, r *http.Request) *errors.AppError {
 		}
 	}
 
-	query := fmt.Sprintf(`SELECT s.id,
-								s.slo_name,
-								s.target_slo,
-								COUNT(i.id) AS num_incidents,
-								COUNT(CASE WHEN i.mark_false_positive = 't' THEN 1 END) AS num_incidents_false_positive
-						FROM slos s 
-						LEFT JOIN incidents i ON s.id = i.slo_id AND TO_CHAR(i.created_at, 'YYYY-MM') = '%s'
-						WHERE s.deleted_at is null
-						GROUP BY s.id, s.slo_name, s.target_slo ORDER BY s.id;`,
-		yearMonthStr)
+	query := `SELECT s.id,
+				s.slo_name,
+				s.target_slo,
+				COUNT(i.id) AS num_incidents,
+				COUNT(CASE WHEN i.mark_false_positive = 't' THEN 1 END) AS num_incidents_false_positive
+		FROM slos s 
+		LEFT JOIN incidents i ON s.id = i.slo_id AND TO_CHAR(i.created_at, 'YYYY-MM') = ?
+		WHERE s.deleted_at is null
+		GROUP BY s.id, s.slo_name, s.target_slo ORDER BY s.id;`
 
 	var overviewRes []schema.OverviewResult
-	store.DB.Raw(query).Scan(&overviewRes)
+	store.DB.Raw(query, yearMonthStr).Scan(&overviewRes)
 
 	for i, oslo := range overviewRes {
 
