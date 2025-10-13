@@ -6,4 +6,5 @@ export interface ISLO {
   updated_at: Date;
   remaining_err_budget: number;
   working_days?: any;
+  holidays_enabled: boolean;
 }

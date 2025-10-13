@@ -40,6 +40,7 @@ CREATE TABLE "public"."slos" (
   "deleted_at" timestamptz NULL,
   "slo_name" text NOT NULL,
   "target_slo" numeric NULL,
+  "holidays_enabled" boolean NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "uni_slos_slo_name" UNIQUE ("slo_name")
 );

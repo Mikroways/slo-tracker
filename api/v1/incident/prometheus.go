@@ -62,7 +62,7 @@ func createPromIncidentHandler(w http.ResponseWriter, r *http.Request) *errors.A
 			updatedIncident.ErrorBudgetSpent = float32(time.Now().Sub(*incident.CreatedAt).Minutes())
 
 			updated, _ := store.Incident().Update(incident, updatedIncident) // TODO: error handling
-			updatedIncident.RealErrorBudget, _ = utils.DowntimeAcrossDays(*incident.CreatedAt, updatedIncident.ErrorBudgetSpent, *ws)
+			updatedIncident.RealErrorBudget, _ = utils.DowntimeAcrossDays(*incident.CreatedAt, updatedIncident.ErrorBudgetSpent, *ws, *SLO.HolidaysEnabled)
 
 			respond.Created(w, updated)
 		}

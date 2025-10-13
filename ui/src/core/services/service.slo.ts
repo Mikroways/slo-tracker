@@ -12,12 +12,12 @@ class SLOService {
 
   getWorkingSchedule = (sloId: number) => axios.get<IResponse<ISLO[]>>(`${this._api}/${sloId}/workingschedule`);
 
-  create = (data: Pick<ISLO, 'slo_name' | 'target_slo' | 'working_days'>) =>
+  create = (data: Pick<ISLO, 'slo_name' | 'target_slo' | 'working_days' | 'holidays_enabled'>) =>
     axios.post<IResponse<ISLO>>(this._api, data);
 
   update = (
     sloId: number,
-    data: Pick<ISLO, 'slo_name' | 'target_slo' | 'working_days'>,
+    data: Pick<ISLO, 'slo_name' | 'target_slo' | 'working_days' | 'holidays_enabled'>,
     isReset: boolean
   ) =>
     axios.patch<IResponse<ISLO>>(

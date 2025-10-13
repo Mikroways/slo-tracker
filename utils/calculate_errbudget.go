@@ -2,6 +2,8 @@ package utils
 
 import (
 	"fmt"
+	"slices"
+	"slo-tracker/config"
 	"slo-tracker/schema"
 	"strconv"
 	"strings"
@@ -64,14 +66,21 @@ func ParseYearMonth(yearMonth string) (int, int, error) {
 	return year, month, nil
 }
 
-func DowntimeAcrossDays(alarmStart time.Time, durationMinutes float32, schedule []schema.StoreWorkingSchedule) (float32, error) {
+func DowntimeAcrossDays(alarmStart time.Time, durationMinutes float32, schedule []schema.StoreWorkingSchedule, holidaysEnabled bool) (float32, error) {
+
+	holidaysDates := config.FetchHolidays(time.Now().Year())
 
 	alarmEnd := alarmStart.Add(time.Duration(float64(durationMinutes) * float64(time.Minute)))
 	var totalMinutes float64
 
-	currentDay := alarmStart
+	currentDay := time.Date(alarmStart.Year(), alarmStart.Month(), alarmStart.Day(), 0, 0, 0, 0, alarmStart.Location())
 
 	for !currentDay.After(alarmEnd) {
+
+		if holidaysEnabled && slices.Contains(holidaysDates, currentDay.Format("2006-01-02")) {
+			currentDay = currentDay.AddDate(0, 0, 1)
+			continue
+		}
 
 		weekday := int(currentDay.Weekday())
 		var daySchedule *schema.StoreWorkingSchedule
@@ -97,7 +106,7 @@ func DowntimeAcrossDays(alarmStart time.Time, durationMinutes float32, schedule 
 			dayClose := time.Date(currentDay.Year(), currentDay.Month(), currentDay.Day(), 0, 0, 0, 0, currentDay.Location()).Add(closeHour)
 
 			// Calculate overlap
-			start := maxTime(currentDay, dayOpen)
+			start := maxTime(alarmStart, dayOpen)
 			end := minTime(alarmEnd, dayClose)
 
 			if end.After(start) {

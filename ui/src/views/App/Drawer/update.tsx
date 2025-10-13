@@ -49,10 +49,14 @@ const UpdateSLO: React.FC<IProps> = (props) => {
               initialDays[`${day}_close_hour`] = null;
             }
           });
+
+          form.resetFields();
+
           form.setFieldsValue({
             slo_name: slo.slo_name,
+            holidays_enabled: slo.holidays_enabled,
             target_slo: slo.target_slo,
-            reset_slo: false,
+            reset_slo: slo.holidays_enabled,
             ...initialDays,
           });
         } catch (err) {
@@ -73,6 +77,7 @@ const UpdateSLO: React.FC<IProps> = (props) => {
     const slo_name = values['slo_name'];
     const target_slo = parseFloat(values['target_slo']);
     const reset_slo = values['reset_slo'] || false;
+    const holidays_enabled = values['holidays_enabled'];
 
     // Validate enabled days first
     for (const day of DAYS) {
@@ -104,6 +109,7 @@ const UpdateSLO: React.FC<IProps> = (props) => {
           slo_name,
           target_slo,
           working_days,
+          'holidays_enabled': holidays_enabled,
         },
         reset_slo
       );
@@ -231,6 +237,12 @@ const UpdateSLO: React.FC<IProps> = (props) => {
           </Col>
         </Row>
       ))}
+
+      <Form.Item name="holidays_enabled" valuePropName="checked">
+        <Checkbox>
+          Enable Holidays
+        </Checkbox>
+      </Form.Item>
 
       <Form.Item>
         <Row style={{ justifyContent: 'space-between' }}>
