@@ -88,12 +88,11 @@ func refreshHolidays(year int) ([]Holiday, error) {
 		return nil, fmt.Errorf("error decoding response: %w", err)
 	}
 
-	dates := make([]string, len(holidays)+1)
+	dates := make([]string, len(holidays))
 
 	for i, val := range holidays {
 		dates[i] = val.Date
 	}
-	dates[len(holidays)] = "2025-10-13"
 
 	viper.SetDefault("HOLIDAYS_DATES", dates)
 
