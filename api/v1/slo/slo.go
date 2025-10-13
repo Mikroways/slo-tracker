@@ -196,3 +196,50 @@ func getWorkingSchedule(w http.ResponseWriter, r *http.Request) *errors.AppError
 	respond.OK(w, sloPayload)
 	return nil
 }
+
+func getOverview(w http.ResponseWriter, r *http.Request) *errors.AppError {
+
+	yearMonthStr := r.URL.Query().Get("yearMonth")
+
+	if yearMonthStr == "" { // parameter not present or is empty, return all incidents
+		return errors.BadRequest("parameter 'yearMonth' must be present and must not be empty")
+	} else {
+		_, err := time.Parse("2006-01", yearMonthStr)
+		if err != nil {
+			return errors.BadRequest("Error parsing yearMonth, parameter should be like '2025-08'").AddDebug(err)
+		}
+	}
+
+	query := `SELECT s.id,
+				s.slo_name,
+				s.target_slo,
+				COUNT(i.id) AS num_incidents,
+				COUNT(CASE WHEN i.mark_false_positive = 't' THEN 1 END) AS num_incidents_false_positive
+		FROM slos s 
+		LEFT JOIN incidents i ON s.id = i.slo_id AND TO_CHAR(i.created_at, 'YYYY-MM') = ?
+		WHERE s.deleted_at is null
+		GROUP BY s.id, s.slo_name, s.target_slo ORDER BY s.id;`
+
+	var overviewRes []schema.OverviewResult
+	store.DB.Raw(query, yearMonthStr).Scan(&overviewRes)
+
+	for i, oslo := range overviewRes {
+
+		slo, err := store.SLO().GetByID(oslo.Id)
+		if err != nil {
+			return err
+		}
+
+		incidents, err := store.Incident().GetByYearMonth(oslo.Id, yearMonthStr)
+		if err != nil {
+			return err
+		}
+
+		rem, c := utils.CalculateMonthlyErrBudget(slo, incidents, yearMonthStr)
+		overviewRes[i].RemErrBudget = rem
+		overviewRes[i].CurrentSlo = c
+	}
+
+	respond.OK(w, overviewRes)
+	return nil
+}
