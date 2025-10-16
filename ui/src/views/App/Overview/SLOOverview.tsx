@@ -68,41 +68,41 @@ const tableColumns = (props) => [
 ];
 
 const DownloadCSVButton = ({ data, yearMonth }: { data: any[]; yearMonth: string }) => {
-//   const downloadCSV = () => {
-// 	const headers = [
-// 	  "SLO Name",
-// 	  "Target SLO",
-// 	  "Current SLO",
-// 	  "Remaining Error Budget",
-// 	  "Incidents",
-// 	  "False Positives",
-// 	];
+  const downloadCSV = () => {
+	const headers = [
+	  "SLO Name",
+	  "Target SLO",
+	  "Current SLO",
+	  "Remaining Error Budget",
+	  "Incidents",
+	  "False Positives",
+	];
 
-//     const rows = data.map((row) => [
-//       row.slo_name,
-//       row.target_slo,
-//       row.current_slo,
-//       row.remaining_err_budget,
-//       row.num_incidents,
-//       row.num_incidents_false_positive,
-//     ]);
+    const rows = data.map((row) => [
+      row.slo_name,
+      row.target_slo,
+      row.current_slo,
+      row.remaining_err_budget,
+      row.num_incidents,
+      row.num_incidents_false_positive,
+    ]);
 
-//     const csvContent =
-//       [headers, ...rows].map((e) => e.join(",")).join("\n");
+    const csvContent =
+      [headers, ...rows].map((e) => e.join(",")).join("\n");
 
-//     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-//     const url = URL.createObjectURL(blob);
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
 
-//     const link = document.createElement("a");
-//     link.href = url;
-//     link.setAttribute("download", `overview-${yearMonth}.csv`);
-//     document.body.appendChild(link);
-//     link.click();
-//     document.body.removeChild(link);
-//   };
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `overview-${yearMonth}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
-    <Button type="primary">
+    <Button type="primary" onClick={downloadCSV}>
       Download CSV
     </Button>
   );
