@@ -22,6 +22,8 @@ func Init(r chi.Router) {
 	r.Method(http.MethodGet, "/overview", api.Handler(getOverview))
 	r.Method(http.MethodGet, "/", api.Handler(getAllSLOsHandler))
 	r.Method(http.MethodPost, "/", api.Handler(createSLOHandler))
+	r.With(middleware.SLONameRequired).
+		Method(http.MethodPatch, "/{SLONAME:\\w+}/falsepositive", api.Handler(updateFalsePositive))
 	r.With(middleware.SLORequired).
 		Route("/{SLOID}", sloIDSubRoutes)
 }

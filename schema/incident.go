@@ -37,6 +37,10 @@ type IncidentReq struct {
 	MarkFalsePositive bool    `json:"mark_false_positive"`
 }
 
+type SetFalsePositiveReq struct {
+	MarkFalsePositive *bool `json:"mark_false_positive"`
+}
+
 // Ok implements the Ok interface, it validates incident input
 func (i *IncidentReq) Ok() error {
 	switch {

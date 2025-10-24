@@ -243,3 +243,38 @@ func getOverview(w http.ResponseWriter, r *http.Request) *errors.AppError {
 	respond.OK(w, overviewRes)
 	return nil
 }
+
+func updateFalsePositive(w http.ResponseWriter, r *http.Request) *errors.AppError {
+
+	//var input schema.Incident
+	ctx := r.Context()
+	SLO, _ := ctx.Value("SLO").(*schema.SLO)
+
+	incident, err := store.Incident().GetLatestBySLOID(SLO.ID)
+
+	if err != nil {
+		return err
+	}
+	if incident == nil {
+		return errors.BadRequest("incident not found for SLO")
+	}
+
+	setFalsePositiveReq := &schema.SetFalsePositiveReq{}
+	if err := utils.Decode(r, setFalsePositiveReq); err != nil {
+		return errors.BadRequest(err.Error()).AddDebug(err)
+	}
+
+	if setFalsePositiveReq.MarkFalsePositive == nil {
+		return errors.BadRequest("mark_false_positive is required")
+	}
+
+	updated := incident
+	updated.MarkFalsePositive = *setFalsePositiveReq.MarkFalsePositive
+
+	if incident, err = store.Incident().Update(incident, updated); err != nil {
+		return err
+	}
+
+	respond.OK(w, incident)
+	return nil
+}

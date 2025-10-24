@@ -37,3 +37,24 @@ func SLORequired(next http.Handler) http.Handler {
 
 	return http.HandlerFunc(fn)
 }
+
+func SLONameRequired(next http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		SLONAME := chi.URLParam(r, "SLONAME")
+
+		SLO, err := Store.SLO().GetByName(SLONAME)
+		if err != nil {
+			fmt.Println(err, SLO)
+			respond.Fail(w, errors.BadRequest("Unable to find SLO").AddDebug(err))
+			return
+		}
+
+		ctx := ContextWrapAll(r.Context(), map[interface{}]interface{}{
+			"SLONAME": SLONAME,
+			"SLO":     SLO,
+		})
+		next.ServeHTTP(w, r.WithContext(ctx))
+	}
+
+	return http.HandlerFunc(fn)
+}
