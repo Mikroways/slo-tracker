@@ -17,8 +17,7 @@ const (
 	// EnvStaging const represents staging environment
 	EnvStaging = "staging"
 	// EnvProduction const represents production environment
-	EnvProduction   = "production"
-	holidayEndpoint = "https://api.argentinadatos.com/v1/feriados/"
+	EnvProduction = "production"
 )
 
 type Holiday struct {
@@ -40,6 +39,7 @@ func Initialize() {
 	viper.SetDefault("DB_USER", "root")
 	viper.SetDefault("DB_PASS", "SecretPassword")
 	viper.SetDefault("DB_NAME", "slotracker")
+	viper.SetDefault("HOLIDAYS_ENDPOINT", "https://api.argentinadatos.com/v1/feriados/")
 	viper.SetDefault("HOLIDAYS_DATES", []string{})
 
 	currentYear := time.Now().Year()
@@ -70,7 +70,7 @@ func FetchHolidays(year int) []string {
 
 func refreshHolidays(year int) ([]Holiday, error) {
 
-	resp, err := http.Get(holidayEndpoint + strconv.Itoa(year))
+	resp, err := http.Get(viper.Get("HOLIDAYS_ENDPOINT").(string) + strconv.Itoa(year))
 
 	if err != nil {
 		return nil, fmt.Errorf("error fetching API: %w", err)
