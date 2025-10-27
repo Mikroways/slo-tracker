@@ -10,10 +10,11 @@ import (
 type SLO struct {
 	gorm.Model
 
-	ID        uint       `json:"id,omitempty" sql:"primary_key"`
-	SLOName   string     `json:"slo_name" gorm:"unique;not null"`
-	TargetSLO float32    `json:"target_slo"`
-	UpdatedAt *time.Time `json:"updated_at,omitempty" sql:"default:current_timestamp"`
+	ID              uint       `json:"id,omitempty" sql:"primary_key"`
+	SLOName         string     `json:"slo_name" gorm:"unique;not null"`
+	TargetSLO       float32    `json:"target_slo"`
+	HolidaysEnabled *bool      `json:"holidays_enabled"`
+	UpdatedAt       *time.Time `json:"updated_at,omitempty" sql:"default:current_timestamp"`
 }
 
 type SLOResponse struct {
@@ -25,7 +26,8 @@ type SLOResponse struct {
 }
 
 type SLOPayload struct {
-	SLOName   string               `json:"slo_name"`
-	TargetSLO float32              `json:"target_slo"`
-	Days      []WorkingDaySchedule `json:"working_days"`
+	SLOName         string               `json:"slo_name"`
+	TargetSLO       float32              `json:"target_slo"`
+	Days            []WorkingDaySchedule `json:"working_days"`
+	HolidaysEnabled bool                 `json:"holidays_enabled"`
 }

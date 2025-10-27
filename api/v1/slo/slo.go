@@ -43,8 +43,9 @@ func createSLOHandler(w http.ResponseWriter, r *http.Request) *errors.AppError {
 	}
 
 	slo, err := store.SLO().Create(&schema.SLO{
-		SLOName:   input.SLOName,
-		TargetSLO: input.TargetSLO,
+		SLOName:         input.SLOName,
+		TargetSLO:       input.TargetSLO,
+		HolidaysEnabled: &input.HolidaysEnabled,
 	})
 
 	if err != nil {
@@ -124,8 +125,9 @@ func updateSLOHandler(w http.ResponseWriter, r *http.Request) *errors.AppError {
 	}
 
 	updated, err := store.SLO().Update(slo, &schema.SLO{
-		SLOName:   input.SLOName,
-		TargetSLO: input.TargetSLO,
+		SLOName:         input.SLOName,
+		TargetSLO:       input.TargetSLO,
+		HolidaysEnabled: &input.HolidaysEnabled,
 	})
 	if err != nil {
 		return err
@@ -180,9 +182,10 @@ func getWorkingSchedule(w http.ResponseWriter, r *http.Request) *errors.AppError
 	}
 
 	sloPayload := &schema.SLOPayload{
-		SLOName:   slo.SLOName,
-		TargetSLO: slo.TargetSLO,
-		Days:      []schema.WorkingDaySchedule{},
+		SLOName:         slo.SLOName,
+		TargetSLO:       slo.TargetSLO,
+		Days:            []schema.WorkingDaySchedule{},
+		HolidaysEnabled: *slo.HolidaysEnabled,
 	}
 
 	for _, w := range *ws {

@@ -18,6 +18,7 @@ const CreateSLO: React.FC<IProps> = (props) => {
   const onSubmit = async (values: any) => {
     const slo_name = values['slo_name'];
     const target_slo = parseFloat(values['target_slo']);
+    const holidays_enabled = values['holidays_enabled']
 
     if (target_slo < 1 || target_slo > 100) {
       openNotification('error', 'Target SLO should be between 1 to 100.');
@@ -52,6 +53,7 @@ const CreateSLO: React.FC<IProps> = (props) => {
         slo_name,
         target_slo,
         working_days,
+        holidays_enabled,
       });
       props.refreshSLOs();
       openNotification('success', 'Successfully created SLO');
@@ -156,6 +158,12 @@ const CreateSLO: React.FC<IProps> = (props) => {
           </Col>
         </Row>
       ))}
+
+      <Form.Item name="holidays_enabled" valuePropName="checked" noStyle>
+        <Checkbox>
+          Enable Holidays
+        </Checkbox>
+      </Form.Item>
 
       <Form.Item>
         <Button style={{ float: 'right' }} type="primary" htmlType="submit">

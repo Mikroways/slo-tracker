@@ -54,7 +54,7 @@ func createGrafanaIncidentHandler(w http.ResponseWriter, r *http.Request) *error
 		updatedIncident := incident
 		updatedIncident.State = "closed"
 		updatedIncident.ErrorBudgetSpent = float32(time.Since(*incident.CreatedAt).Minutes())
-		updatedIncident.RealErrorBudget, _ = utils.DowntimeAcrossDays(*incident.CreatedAt, updatedIncident.ErrorBudgetSpent, *ws)
+		updatedIncident.RealErrorBudget, _ = utils.DowntimeAcrossDays(*incident.CreatedAt, updatedIncident.ErrorBudgetSpent, *ws, *SLO.HolidaysEnabled)
 
 		updated, _ := store.Incident().Update(incident, updatedIncident) // TODO: error handling
 
