@@ -124,3 +124,16 @@ func (cs *IncidentStore) Delete(SLOID uint) *errors.AppError {
 	}
 	return nil
 }
+
+// GetLatestBySLOID returns the latest incident of a SLO
+func (cs *IncidentStore) GetLatestBySLOID(SLOID uint) (*schema.Incident, *errors.AppError) {
+	var incident schema.Incident
+	if err := cs.DB.Order("created_at DESC").First(&incident, "slo_id=?", SLOID).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, errors.InternalServerStd().AddDebug(err)
+		}
+		return nil, errors.InternalServerStd().AddDebug(err)
+	}
+
+	return &incident, nil
+}
