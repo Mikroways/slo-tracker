@@ -1,0 +1,25 @@
+# Git specific files and directories
+.git
+.gitignore
+.github
+
+# Go build artifacts and cache
+*.o
+*.a
+*.so
+*.exe
+*.test
+*.prof
+vendor/ # If you are not using Go modules or explicitly managing vendor dependencies within the image
+build/
+bin/
+
+# IDE and editor specific files
+.idea/
+.vscode/
+*.swp
+
+LICENSE
+README.md
+CONTRIBUTING.md
+CODE_OF_CONDUCT.md
