@@ -1,17 +1,5 @@
-data "external_schema" "gorm" {
-  program = [
-    "go",
-    "run",
-    "-mod=mod",
-    "ariga.io/atlas-provider-gorm",
-    "load",
-    "--path", "./schema",
-    "--dialect", "postgres",
-  ]
-}
-
-env "gorm" {
-  src = data.external_schema.gorm.url
+env "local" {
+  src = "file://schema.hcl"
   dev = "docker://postgres/15/slotracker"
   migration {
     dir = "file://migrations"
@@ -20,5 +8,12 @@ env "gorm" {
     migrate {
       diff = "{{ sql . \"  \" }}"
     }
+  }
+}
+
+env "default" { # expected to be used for the helm pre-install hook
+  url = getenv("DATABASE_URL")
+  migration {
+    dir = "file://migrations"
   }
 }
