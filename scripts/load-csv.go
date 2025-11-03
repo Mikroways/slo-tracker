@@ -13,7 +13,7 @@ import (
 
 type CSVRow struct {
 	Name      string `csv:"name"`
-	Holidays  string `csv:"holidays"`
+	Holidays  bool   `csv:"holidays"`
 	Weekday   int    `csv:"weekday"`
 	OpenHour  string `csv:"open_hour"`
 	CloseHour string `csv:"close_hour"`
@@ -36,15 +36,13 @@ func loadCSV(csvFile string) error {
 
 	for _, row := range rows {
 
-		holidaysEnabled := row.Holidays == "Si"
-
 		slo, err := conn.SLO().GetByName(row.Name)
 
 		if err != nil { // store does not exists
 			slo = &schema.SLO{
 				SLOName:         row.Name,
 				TargetSLO:       99.5,
-				HolidaysEnabled: &holidaysEnabled,
+				HolidaysEnabled: &row.Holidays,
 			}
 			conn.SLO().Create(slo)
 		}

@@ -1,0 +1,6 @@
+name,holidays,weekday,open_hour,close_hour
+FWBCDRSCO,false,0,0:00,23:59
+FWBCDRSCO,false,1,0:00,23:59
+Buenos Aires,true,1,09:00,18:00
+Buenos Aires,true,2,09:00,18:00
+Buenos Aires,true,3,09:00,18:00
