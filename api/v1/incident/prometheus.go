@@ -120,7 +120,8 @@ func CreatePromIncidentHandlerByLabelName(w http.ResponseWriter, r *http.Request
 
 			ws, err := store.SLO().GetWorkingSchedule(SLO.ID)
 			if err != nil {
-				return err
+				fmt.Println("Working Schedule for SLO does not exists")
+				continue
 			}
 
 			updatedIncident := incident
