@@ -80,13 +80,20 @@ func CreatePromIncidentHandlerByLabelName(w http.ResponseWriter, r *http.Request
 
 	if input.Status == "firing" {
 		for _, alert := range input.Alerts {
+
+			SLO, err := store.SLO().GetByName(alert.Labels.Name)
+			if err != nil {
+				fmt.Println("SLO does not exists", alert.Labels.Name)
+				continue
+			}
+
 			incident, _ := store.Incident().GetBySLINameV2(alert.Labels.Name)
 			// There are no open incident for this SLI, creating new incident
 			if incident == nil || incident.State != "open" {
 				fmt.Println("Existing incident not found, so creating one now")
 				incident, _ = store.Incident().Create(&schema.IncidentReq{
 					SliName:          alert.Labels.Name,
-					SLOID:            getSloId(incident, alert.Labels.Name),
+					SLOID:            SLO.ID,
 					Alertsource:      "Prometheus",
 					State:            "open",
 					ErrorBudgetSpent: 0,
@@ -105,32 +112,26 @@ func CreatePromIncidentHandlerByLabelName(w http.ResponseWriter, r *http.Request
 				continue
 			}
 
+			SLO, err := store.SLO().GetByName(alert.Labels.Name)
+			if err != nil {
+				fmt.Println("SLO does not exists", alert.Labels.Name)
+				continue
+			}
+
+			ws, err := store.SLO().GetWorkingSchedule(SLO.ID)
+			if err != nil {
+				return err
+			}
+
 			updatedIncident := incident
 			updatedIncident.State = "closed"
 			updatedIncident.ErrorBudgetSpent = float32(time.Now().Sub(*incident.CreatedAt).Minutes())
+			updatedIncident.RealErrorBudget, _ = utils.DowntimeAcrossDays(*incident.CreatedAt, updatedIncident.ErrorBudgetSpent, *ws, *SLO.HolidaysEnabled)
 
 			updated, _ := store.Incident().Update(incident, updatedIncident) // TODO: error handling
-
-			// deduct error budget with incident downtime
-			err = store.SLO().CutErrBudget(updatedIncident.SLOID, updatedIncident.ErrorBudgetSpent)
 
 			respond.Created(w, updated)
 		}
 	}
 	return nil
-}
-
-
-func getSloId(incident *schema.Incident, name string) uint {
-	if (incident == nil) {
-		slo, _ := store.SLO().Create(&schema.SLO{
-			SLOName: name,
-			TargetSLO: 100,
-			CurrentSLO: 100,
-			RemainingErrBudget: 0,
-		})
-		return slo.ID
-	} else {
-		return incident.SLOID
-	}
 }

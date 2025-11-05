@@ -136,6 +136,7 @@ func (cs *IncidentStore) Update(incident *schema.Incident, update *schema.Incide
 		"State":             update.State,
 		"ErrorBudgetSpent":  update.ErrorBudgetSpent,
 		"MarkFalsePositive": update.MarkFalsePositive,
+		"RealErrorBudget":   update.RealErrorBudget,
 	}).Error; err != nil {
 		return nil, errors.InternalServerStd().AddDebug(err)
 	}
