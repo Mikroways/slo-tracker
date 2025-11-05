@@ -72,6 +72,32 @@ func (cs *IncidentStore) GetBySLIName(SLOID uint, sliName string) (*schema.Incid
 	return &incident, nil
 }
 
+// GetBySLINameV2 returns the matched record for the given SLI
+func (cs *IncidentStore) GetBySLINameV2(sliName string) (*schema.Incident, *errors.AppError) {
+	var incident schema.Incident
+	if err := cs.DB.First(&incident, "sli_name=?", sliName).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, errors.InternalServerStd().AddDebug(err)
+		}
+		return nil, errors.InternalServerStd().AddDebug(err)
+	}
+
+	return &incident, nil
+}
+
+// GetBySLINameAndOpenState returns the matched record for the given SLI
+func (cs *IncidentStore) GetBySLINameAndOpenState(sliName string) (*schema.Incident, *errors.AppError) {
+	var incident schema.Incident
+	if err := cs.DB.First(&incident, "state=? AND sli_name=?", "open", sliName).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, errors.InternalServerStd().AddDebug(err)
+		}
+		return nil, errors.InternalServerStd().AddDebug(err)
+	}
+
+	return &incident, nil
+}
+
 // Create a new Incident
 func (cs *IncidentStore) Create(req *schema.IncidentReq) (*schema.Incident, *errors.AppError) {
 
@@ -110,6 +136,7 @@ func (cs *IncidentStore) Update(incident *schema.Incident, update *schema.Incide
 		"State":             update.State,
 		"ErrorBudgetSpent":  update.ErrorBudgetSpent,
 		"MarkFalsePositive": update.MarkFalsePositive,
+		"RealErrorBudget":   update.RealErrorBudget,
 	}).Error; err != nil {
 		return nil, errors.InternalServerStd().AddDebug(err)
 	}
