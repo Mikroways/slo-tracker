@@ -3,6 +3,8 @@ package store
 import (
 	"slo-tracker/pkg/errors"
 	"slo-tracker/schema"
+
+	"gorm.io/gorm"
 )
 
 // Store global store interface - provides db interface methods
@@ -20,6 +22,8 @@ type Incident interface {
 	GetBySLIName(sloID uint, sliName string) (*schema.Incident, *errors.AppError)
 	GetBySLINameV2(sliName string) (*schema.Incident, *errors.AppError)
 	GetBySLINameAndOpenState(sliName string) (*schema.Incident, *errors.AppError)
+	GetByYearMonth(SLOID uint, yearMonthStr string) ([]*schema.Incident, *errors.AppError)
+	GetLatestBySLOID(SLOID uint) (*schema.Incident, *errors.AppError)
 	Update(incident *schema.Incident, update *schema.Incident) (*schema.Incident, *errors.AppError)
 	Delete(SLOID uint) *errors.AppError
 }
@@ -32,5 +36,13 @@ type SLO interface {
 	GetByName(SLOName string) (*schema.SLO, *errors.AppError)
 	Update(SLO *schema.SLO, update *schema.SLO) (*schema.SLO, *errors.AppError)
 	Delete(SLO *schema.SLO) *errors.AppError
-	CutErrBudget(SLOID uint, downtimeInMins float32) *errors.AppError
+	CreateWorkingSchedule(req *schema.StoreWorkingSchedule) (*schema.StoreWorkingSchedule, *errors.AppError)
+	GetWorkingSchedule(SLOID uint) (*[]schema.StoreWorkingSchedule, *errors.AppError)
+	DeleteWorkingSchedule(SLOID uint) *errors.AppError
+}
+
+type Database interface {
+	GenerateDSN(string)
+	ConnectORM() error
+	GetGorm() *gorm.DB
 }

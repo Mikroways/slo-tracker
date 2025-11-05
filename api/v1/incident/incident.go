@@ -1,8 +1,8 @@
 package incident
 
 import (
-	"fmt"
 	"net/http"
+	"time"
 
 	"slo-tracker/pkg/errors"
 	"slo-tracker/pkg/respond"
@@ -12,14 +12,29 @@ import (
 
 // getAllIncidentsHandler fetches and unmarshal the incidentt data
 func getAllIncidentsHandler(w http.ResponseWriter, r *http.Request) *errors.AppError {
-
+	var incidents []*schema.Incident
+	var appErr *errors.AppError
 	// fetch the slo_id from contex
 	ctx := r.Context()
 	SLOID, _ := ctx.Value("SLOID").(uint)
 
-	incidents, err := store.Incident().All(SLOID)
-	if err != nil {
-		return err
+	yearMonthStr := r.URL.Query().Get("yearMonth")
+
+	if yearMonthStr == "" { // parameter not present or is empty, return all incidents
+		incidents, appErr = store.Incident().All(SLOID)
+		if appErr != nil {
+			return appErr
+		}
+	} else {
+		_, err := time.Parse("2006-01", yearMonthStr)
+		if err != nil {
+			return errors.BadRequest("Error parsing yearMonth, parameter should be like '2025-08'").AddDebug(err)
+		}
+
+		incidents, appErr = store.Incident().GetByYearMonth(SLOID, yearMonthStr)
+		if err != nil {
+			return appErr
+		}
 	}
 
 	respond.OK(w, incidents)
@@ -37,11 +52,19 @@ func createIncidentHandler(w http.ResponseWriter, r *http.Request) *errors.AppEr
 	// fetch the slo_id from context and add it to incident creation request
 	ctx := r.Context()
 	input.SLOID, _ = ctx.Value("SLOID").(uint)
+	SLO, _ := ctx.Value("SLO").(*schema.SLO)
 
-	// deduct error budget with incident downtime
-	err := store.SLO().CutErrBudget(input.SLOID, input.ErrorBudgetSpent)
+	ws, err := store.SLO().GetWorkingSchedule(SLO.ID)
 	if err != nil {
-		fmt.Println("Unable to deduct error budget for the incident")
+		return err
+	}
+
+	input.CreatedAt = time.Now()
+	var errDate error
+	input.RealErrorBudget, errDate = utils.DowntimeAcrossDays(input.CreatedAt, input.ErrorBudgetSpent, *ws, *SLO.HolidaysEnabled)
+
+	if errDate != nil {
+		return errors.BadRequest(errDate.Error()).AddDebug(errDate)
 	}
 
 	incident, err := store.Incident().Create(&input)

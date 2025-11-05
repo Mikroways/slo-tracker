@@ -19,14 +19,18 @@ func Init(r chi.Router) {
 
 	store = api.Store
 
+	r.Method(http.MethodGet, "/overview", api.Handler(getOverview))
 	r.Method(http.MethodGet, "/", api.Handler(getAllSLOsHandler))
 	r.Method(http.MethodPost, "/", api.Handler(createSLOHandler))
+	r.With(middleware.SLONameRequired).
+		Method(http.MethodPatch, "/{SLONAME:\\w+}/falsepositive", api.Handler(updateFalsePositive))
 	r.With(middleware.SLORequired).
 		Route("/{SLOID}", sloIDSubRoutes)
 }
 
 // ROUTE: {host}/v1/slo/:sloID/*
 func sloIDSubRoutes(r chi.Router) {
+	r.Method(http.MethodGet, "/workingschedule", api.Handler(getWorkingSchedule))
 	r.Method(http.MethodGet, "/", api.Handler(getSLOHandler))
 	r.Method(http.MethodPatch, "/", api.Handler(updateSLOHandler))
 	r.Method(http.MethodDelete, "/", api.Handler(deleteSLOHandler))

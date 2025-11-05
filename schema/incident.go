@@ -5,10 +5,14 @@ import (
 	"time"
 
 	"slo-tracker/pkg/errors"
+
+	"gorm.io/gorm"
 )
 
 // Incident stores the incidentList response payload
 type Incident struct {
+	gorm.Model
+
 	ID                uint       `json:"id,omitempty" sql:"primary_key"`
 	SliName           string     `json:"sli_name"`
 	SLOID             uint       `json:"slo_id"` // References SLO model
@@ -16,17 +20,25 @@ type Incident struct {
 	State             string     `json:"state"`
 	CreatedAt         *time.Time `json:"created_at,omitempty" sql:"default:current_timestamp"`
 	ErrorBudgetSpent  float32    `json:"err_budget_spent"`
+	RealErrorBudget   float32    `json:"real_err_budget_spent"`
 	MarkFalsePositive bool       `json:"mark_false_positive"`
 }
 
 // IncidentReq Schema stores the new incident creation/update request payload
 type IncidentReq struct {
+	gorm.Model
+
 	SliName           string  `json:"sli_name"`
 	SLOID             uint    `json:"slo_id"` // References SLO model
 	Alertsource       string  `json:"alertsource"`
 	State             string  `json:"state"`
 	ErrorBudgetSpent  float32 `json:"err_budget_spent"`
+	RealErrorBudget   float32 `json:"real_err_budget_spent"`
 	MarkFalsePositive bool    `json:"mark_false_positive"`
+}
+
+type SetFalsePositiveReq struct {
+	MarkFalsePositive *bool `json:"mark_false_positive"`
 }
 
 // Ok implements the Ok interface, it validates incident input

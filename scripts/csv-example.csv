@@ -1,0 +1,6 @@
+name,holidays,weekday,open_hour,close_hour
+foo,false,0,0:00,23:59
+foo,false,1,0:00,23:59
+bar,true,1,09:00,18:00
+bar,true,2,09:00,18:00
+bar,true,3,09:00,18:00

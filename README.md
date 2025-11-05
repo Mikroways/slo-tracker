@@ -46,3 +46,25 @@ Refer to [CONTRIBUTING.md](https://github.com/roshan8/slo-tracker/blob/main/CONT
 
 [![Stargazers over time](https://starchart.cc/roshan8/slo-tracker.svg)](https://starchart.cc/roshan8/slo-tracker)
 
+
+## DB Migrations
+
+Historically this app backend creates db schemas on startup, however we believe it's not a good practice leting the app interact with schema structure, therefore we moved to [Atlas](https://github.com/ariga/atlas), here some handy commands:
+
+Although would be a good idea reading the db schemas from gorm (using atlas-provider-gorm), we've found constraints while using `time` postgress data type, since `time` is a keyword in Go it defaults to timestampz, which is not the desired output. We choose to define db schemas in `schema.hcl` file
+
+Steps to add a migration:
+
+1. Edit `schema.hcl` file
+2. Run atlas migrate command to generate sql files under `migrations` folder
+    ```sh
+    atlas migrate diff --env local
+    ```
+3. Optionally, we can check differences between defined schema and the schema running
+    ```sh
+    atlas schema diff --from "postgres://root:SecretPassword@localhost:5432/slotracker?sslmode=disable" --to "file://schema.hcl" --env local
+    ```
+4. Apply the changes (remove --dry-run for real apply)
+    ```sh
+    atlas schema apply --env local  --url "postgres://root:SecretPassword@localhost:5432/slotracker?sslmode=disable" --dry-run
+    ```

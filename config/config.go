@@ -1,8 +1,14 @@
 package config
 
 import (
+	"encoding/json"
 	"fmt"
-	"os"
+	"log"
+	"net/http"
+	"strconv"
+	"time"
+
+	"github.com/spf13/viper"
 )
 
 const (
@@ -14,44 +20,81 @@ const (
 	EnvProduction = "production"
 )
 
-// Env holds the current environment
-var (
-	Env      string
-	Port     string
-	DBDriver string
-	DBHost   string
-	DBPort   string
-	DBUser   string
-	DBPass   string
-	DBName   string
-	DBDsn    string
-)
+type Holiday struct {
+	Date string `json:"fecha"`
+	Type string `json:"tipo"`
+	Name string `json:"nombre"`
+}
 
 // Initialize ...
 func Initialize() {
-	GetAllEnv()
-	DBDsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		DBUser, DBPass, DBHost, DBPort, DBName)
 
-}
+	viper.AutomaticEnv()
 
-// GetAllEnv should get all the env configs required for the app.
-func GetAllEnv() {
-	// API Configs
-	mustEnv("ENV", &Env, EnvDev)
-	mustEnv("PORT", &Port, "8080")
-	mustEnv("DB_DRIVER", &DBDriver, "mysql")
-	mustEnv("DB_HOST", &DBHost, "localhost")
-	mustEnv("DB_PORT", &DBPort, "3306")
-	mustEnv("DB_USER", &DBUser, "root")
-	mustEnv("DB_PASS", &DBPass, "SecretPassword")
-	mustEnv("DB_NAME", &DBName, "slotracker_dev")
-}
+	viper.SetDefault("ENV", EnvDev)
+	viper.SetDefault("PORT", "8080")
+	viper.SetDefault("DB_DRIVER", "postgres")
+	viper.SetDefault("DB_HOST", "localhost")
+	viper.SetDefault("DB_PORT", "5432")
+	viper.SetDefault("DB_USER", "root")
+	viper.SetDefault("DB_PASS", "SecretPassword")
+	viper.SetDefault("DB_NAME", "slotracker")
+	viper.SetDefault("HOLIDAYS_ENDPOINT", "https://api.argentinadatos.com/v1/feriados/")
+	viper.SetDefault("HOLIDAYS_DATES", []string{})
 
-// mustEnv get the env variable with the name 'key' and store it in 'value'
-func mustEnv(key string, value *string, defaultVal string) {
-	if *value = os.Getenv(key); *value == "" {
-		*value = defaultVal
-		fmt.Printf("%s env variable not set, using default value.\n", key)
+	currentYear := time.Now().Year()
+	viper.SetDefault("HOLIDAY_YEAR", currentYear)
+
+	_, err := refreshHolidays(currentYear)
+
+	if err != nil {
+		log.Println("Failing refreshing holidays: ", err)
 	}
+
+}
+
+func FetchHolidays(year int) []string {
+
+	if year != viper.Get("HOLIDAY_YEAR") {
+		_, err := refreshHolidays(year)
+
+		if err != nil {
+			log.Println("Failing fetching holidays: ", err)
+		}
+
+		viper.SetDefault("HOLIDAY_YEAR", year)
+	}
+
+	return viper.Get("HOLIDAYS_DATES").([]string)
+}
+
+func refreshHolidays(year int) ([]Holiday, error) {
+
+	resp, err := http.Get(viper.Get("HOLIDAYS_ENDPOINT").(string) + strconv.Itoa(year))
+
+	if err != nil {
+		return nil, fmt.Errorf("error fetching API: %w", err)
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("bad response: %s", resp.Status)
+	}
+
+	var holidays []Holiday
+
+	if err := json.NewDecoder(resp.Body).Decode(&holidays); err != nil {
+		return nil, fmt.Errorf("error decoding response: %w", err)
+	}
+
+	dates := make([]string, len(holidays))
+
+	for i, val := range holidays {
+		dates[i] = val.Date
+	}
+
+	viper.SetDefault("HOLIDAYS_DATES", dates)
+
+	return holidays, nil
 }

@@ -10,7 +10,7 @@ class IncidentService {
     this._api = `${API}/api/v1/incident/${SLOId}`;
   }
 
-  get = () => axios.get<IResponse<IIncident[]>>(this._api);
+  get = (params?: {yearMonth?: string}) => axios.get<IResponse<IIncident[]>>(this._api, { params });
 
   create = (data: Pick<IIncident, 'sli_name' | 'alertsource' | 'err_budget_spent' | 'state'>) => axios.post<IResponse<IIncident>>(this._api, data);
 
