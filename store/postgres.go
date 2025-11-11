@@ -14,7 +14,7 @@ type PostgresDB struct {
 }
 
 func (postgresDB *PostgresDB) GenerateDSN(dbName string) {
-	postgresDB.dsn = fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
+	postgresDB.dsn = fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
 		viper.GetString("DB_USER"),
 		viper.GetString("DB_PASS"),
 		viper.GetString("DB_HOST"),
