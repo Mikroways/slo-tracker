@@ -108,4 +108,5 @@ extraEnv: []
 extraSecrets: []
 
 migrations:
+  enable: false
   extraEnvs: []
