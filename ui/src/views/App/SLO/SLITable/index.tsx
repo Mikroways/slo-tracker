@@ -71,6 +71,7 @@ const SLITable: React.FC<IProps> = ({ SLIs, ...props }) => {
         mark_false_positive: state,
         state: sli.state,
         err_budget_spent: sli.err_budget_spent,
+        real_err_budget_spent: sli.real_err_budget_spent,
       });
       props.refreshSLOAndSLIs();
       openNotification('success', 'Incident updated successfully');
