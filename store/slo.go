@@ -23,7 +23,7 @@ func NewSLOStore(st *Conn) *SLOStore {
 // All returns all the SLOs
 func (cs *SLOStore) All() ([]*schema.SLO, *errors.AppError) {
 	var SLOs []*schema.SLO
-	if err := cs.DB.Find(&SLOs).Error; err != nil { // For displaying all the columns
+	if err := cs.DB.Order("slo_name").Find(&SLOs).Error; err != nil { // For displaying all the columns
 		// if err := cs.DB.Select("SliName, Alertsource, State, CreatedAt, ErrorBudgetSpent, MarkFalsePositive").Find(&SLOs).Error; err != nil {
 		return nil, errors.InternalServerStd().AddDebug(err)
 	}
