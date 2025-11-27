@@ -2,12 +2,15 @@ package utils
 
 import (
 	"fmt"
+	"log"
 	"slices"
 	"slo-tracker/config"
 	"slo-tracker/schema"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/spf13/viper"
 )
 
 func CalculateErrBudget(targetSLOinPerc float32) float32 {
@@ -67,6 +70,13 @@ func ParseYearMonth(yearMonth string) (int, int, error) {
 }
 
 func DowntimeAcrossDays(alarmStart time.Time, durationMinutes float32, schedule []schema.StoreWorkingSchedule, holidaysEnabled bool) (float32, error) {
+
+	loc, err := time.LoadLocation(viper.GetString("TZ"))
+	if err != nil {
+		log.Println("Error loading location: %v", err)
+	}
+
+	alarmStart = alarmStart.In(loc)
 
 	holidaysDates := config.FetchHolidays(time.Now().Year())
 

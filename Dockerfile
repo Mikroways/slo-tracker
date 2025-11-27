@@ -17,7 +17,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /app/slo-tracker .
 FROM alpine AS final
 
 RUN apk upgrade && \
-    apk --no-cache add curl
+    apk --no-cache add curl tzdata
 
 WORKDIR /app
 
