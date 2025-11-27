@@ -78,8 +78,6 @@ func DowntimeAcrossDays(alarmStart time.Time, durationMinutes float32, schedule 
 
 	alarmStart = alarmStart.In(loc)
 
-	log.Println("alarm start: ", alarmStart)
-
 	holidaysDates := config.FetchHolidays(time.Now().Year())
 
 	alarmEnd := alarmStart.Add(time.Duration(float64(durationMinutes) * float64(time.Minute)))
