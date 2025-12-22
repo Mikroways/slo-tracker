@@ -59,9 +59,10 @@ func createIncidentHandler(w http.ResponseWriter, r *http.Request) *errors.AppEr
 		return err
 	}
 
-	input.CreatedAt = time.Now()
+	timeNow := time.Now()
+	input.CreatedAt = &timeNow
 	var errDate error
-	input.RealErrorBudget, errDate = utils.DowntimeAcrossDays(input.CreatedAt, input.ErrorBudgetSpent, *ws, *SLO.HolidaysEnabled)
+	input.RealErrorBudget, errDate = utils.DowntimeAcrossDays(*input.CreatedAt, input.ErrorBudgetSpent, *ws, *SLO.HolidaysEnabled)
 
 	if errDate != nil {
 		return errors.BadRequest(errDate.Error()).AddDebug(errDate)
