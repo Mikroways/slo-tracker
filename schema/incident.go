@@ -28,13 +28,14 @@ type Incident struct {
 type IncidentReq struct {
 	gorm.Model
 
-	SliName           string  `json:"sli_name"`
-	SLOID             uint    `json:"slo_id"` // References SLO model
-	Alertsource       string  `json:"alertsource"`
-	State             string  `json:"state"`
-	ErrorBudgetSpent  float32 `json:"err_budget_spent"`
-	RealErrorBudget   float32 `json:"real_err_budget_spent"`
-	MarkFalsePositive bool    `json:"mark_false_positive"`
+	SliName           string     `json:"sli_name"`
+	SLOID             uint       `json:"slo_id"` // References SLO model
+	Alertsource       string     `json:"alertsource"`
+	State             string     `json:"state"`
+	CreatedAt         *time.Time `json:"created_at"`
+	ErrorBudgetSpent  float32    `json:"err_budget_spent"`
+	RealErrorBudget   float32    `json:"real_err_budget_spent"`
+	MarkFalsePositive bool       `json:"mark_false_positive"`
 }
 
 type SetFalsePositiveReq struct {
@@ -61,7 +62,7 @@ type PromIncidentReq struct {
 		Labels struct {
 			Alertname string `json:"alertname"`
 			Instance  string `json:"instance"`
-			Name  string `json:"name"`
+			Name      string `json:"name"`
 		} `json:"labels"`
 		StartsAt time.Time `json:"startsAt"`
 		EndsAt   time.Time `json:"endsAt"`

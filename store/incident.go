@@ -106,6 +106,7 @@ func (cs *IncidentStore) Create(req *schema.IncidentReq) (*schema.Incident, *err
 		SLOID:            req.SLOID,
 		Alertsource:      req.Alertsource,
 		State:            req.State,
+		CreatedAt:        req.CreatedAt,
 		ErrorBudgetSpent: req.ErrorBudgetSpent,
 		RealErrorBudget:  req.RealErrorBudget,
 	}
