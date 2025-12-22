@@ -2,6 +2,7 @@ package incident
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -9,6 +10,8 @@ import (
 	"slo-tracker/pkg/respond"
 	"slo-tracker/schema"
 	"slo-tracker/utils"
+
+	"github.com/spf13/viper"
 )
 
 // creates a new incident
@@ -24,18 +27,26 @@ func createPromIncidentHandler(w http.ResponseWriter, r *http.Request) *errors.A
 	SLOID, _ := ctx.Value("SLOID").(uint)
 	SLO, _ := ctx.Value("SLO").(*schema.SLO)
 
+	loc, err := time.LoadLocation(viper.GetString("TZ"))
+	if err != nil {
+		log.Println("Error loading location: %v", err)
+	}
+
 	if input.Status == "firing" {
 		for _, alert := range input.Alerts {
 			incident, _ := store.Incident().GetBySLIName(SLOID, alert.Labels.Alertname)
 
 			// There are no open incident for this SLI, creating new incident
 			if incident == nil || incident.State != "open" {
-				fmt.Println("Existing incident not found, so creating one now")
+
+				incidentStartsAt := alert.StartsAt.In(loc)
+
 				incident, _ = store.Incident().Create(&schema.IncidentReq{
 					SliName:          alert.Labels.Alertname,
 					SLOID:            SLOID,
 					Alertsource:      "Prometheus",
 					State:            "open",
+					CreatedAt:        &incidentStartsAt,
 					ErrorBudgetSpent: 0,
 				})
 				respond.Created(w, incident)
@@ -59,7 +70,8 @@ func createPromIncidentHandler(w http.ResponseWriter, r *http.Request) *errors.A
 
 			updatedIncident := incident
 			updatedIncident.State = "closed"
-			updatedIncident.ErrorBudgetSpent = float32(time.Now().Sub(*incident.CreatedAt).Minutes())
+			incidentEndsAt := alert.EndsAt.In(loc)
+			updatedIncident.ErrorBudgetSpent = float32(incidentEndsAt.Sub(*incident.CreatedAt).Minutes())
 
 			updated, _ := store.Incident().Update(incident, updatedIncident) // TODO: error handling
 			updatedIncident.RealErrorBudget, _ = utils.DowntimeAcrossDays(*incident.CreatedAt, updatedIncident.ErrorBudgetSpent, *ws, *SLO.HolidaysEnabled)
@@ -78,6 +90,11 @@ func CreatePromIncidentHandlerByLabelName(w http.ResponseWriter, r *http.Request
 		return errors.BadRequest(err.Error()).AddDebug(err)
 	}
 
+	loc, err := time.LoadLocation(viper.GetString("TZ"))
+	if err != nil {
+		log.Println("Error loading location: %v", err)
+	}
+
 	if input.Status == "firing" {
 		for _, alert := range input.Alerts {
 
@@ -91,11 +108,15 @@ func CreatePromIncidentHandlerByLabelName(w http.ResponseWriter, r *http.Request
 			// There are no open incident for this SLI, creating new incident
 			if incident == nil || incident.State != "open" {
 				fmt.Println("Existing incident not found, so creating one now")
+
+				incidentStartsAt := alert.StartsAt.In(loc)
+
 				incident, _ = store.Incident().Create(&schema.IncidentReq{
 					SliName:          alert.Labels.Name,
 					SLOID:            SLO.ID,
 					Alertsource:      "Prometheus",
 					State:            "open",
+					CreatedAt:        &incidentStartsAt,
 					ErrorBudgetSpent: 0,
 				})
 				respond.Created(w, incident)
@@ -126,7 +147,8 @@ func CreatePromIncidentHandlerByLabelName(w http.ResponseWriter, r *http.Request
 
 			updatedIncident := incident
 			updatedIncident.State = "closed"
-			updatedIncident.ErrorBudgetSpent = float32(time.Now().Sub(*incident.CreatedAt).Minutes())
+			incidentEndsAt := alert.EndsAt.In(loc)
+			updatedIncident.ErrorBudgetSpent = float32(incidentEndsAt.Sub(*incident.CreatedAt).Minutes())
 			updatedIncident.RealErrorBudget, _ = utils.DowntimeAcrossDays(*incident.CreatedAt, updatedIncident.ErrorBudgetSpent, *ws, *SLO.HolidaysEnabled)
 
 			updated, _ := store.Incident().Update(incident, updatedIncident) // TODO: error handling
