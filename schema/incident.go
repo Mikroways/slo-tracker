@@ -22,6 +22,7 @@ type Incident struct {
 	ErrorBudgetSpent  float32    `json:"err_budget_spent"`
 	RealErrorBudget   float32    `json:"real_err_budget_spent"`
 	MarkFalsePositive bool       `json:"mark_false_positive"`
+	Observations      string     `json:"observations"`
 }
 
 // IncidentReq Schema stores the new incident creation/update request payload
@@ -36,10 +37,12 @@ type IncidentReq struct {
 	ErrorBudgetSpent  float32    `json:"err_budget_spent"`
 	RealErrorBudget   float32    `json:"real_err_budget_spent"`
 	MarkFalsePositive bool       `json:"mark_false_positive"`
+	Observations      string     `json:"observations"`
 }
 
 type SetFalsePositiveReq struct {
-	MarkFalsePositive *bool `json:"mark_false_positive"`
+	MarkFalsePositive *bool  `json:"mark_false_positive"`
+	Observations      string `json:"observations"`
 }
 
 // Ok implements the Ok interface, it validates incident input

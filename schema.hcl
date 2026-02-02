@@ -48,6 +48,10 @@ table "incidents" {
     null = true
     type = boolean
   }
+  column "observations" {
+    null = true
+    type = text
+  }
   primary_key {
     columns = [column.id]
   }
