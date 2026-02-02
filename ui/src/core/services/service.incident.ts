@@ -12,7 +12,7 @@ class IncidentService {
 
   get = (params?: {yearMonth?: string}) => axios.get<IResponse<IIncident[]>>(this._api, { params });
 
-  create = (data: Pick<IIncident, 'sli_name' | 'alertsource' | 'err_budget_spent' | 'state'>) => axios.post<IResponse<IIncident>>(this._api, data);
+  create = (data: Pick<IIncident, 'sli_name' | 'alertsource' | 'err_budget_spent' | 'state' | 'observations'>) => axios.post<IResponse<IIncident>>(this._api, data);
 
   update = (incidentID: number, data: Partial<IIncident>) => axios.patch(`${this._api}/${incidentID}`, data);
 }
