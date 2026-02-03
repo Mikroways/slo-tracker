@@ -42,6 +42,7 @@ func Initialize() {
 	viper.SetDefault("HOLIDAYS_ENDPOINT", "https://api.argentinadatos.com/v1/feriados/")
 	viper.SetDefault("HOLIDAYS_DATES", []string{})
 	viper.SetDefault("TZ", "America/Argentina/Buenos_Aires")
+	viper.SetDefault("MAX_OBSERVATIONS_LENGTH", 500)
 
 	currentYear := time.Now().Year()
 	viper.SetDefault("HOLIDAY_YEAR", currentYear)
