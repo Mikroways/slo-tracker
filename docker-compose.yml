@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
 
   # commenting this since postgres should be the default database, uncomment to use mysql as db layer

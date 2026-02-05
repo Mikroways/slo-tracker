@@ -1,10 +1,12 @@
 package store
 
 import (
+	"fmt"
 	"slo-tracker/pkg/errors"
 	"slo-tracker/schema"
 	"slo-tracker/utils"
 
+	"github.com/spf13/viper"
 	"gorm.io/gorm"
 )
 
@@ -109,6 +111,7 @@ func (cs *IncidentStore) Create(req *schema.IncidentReq) (*schema.Incident, *err
 		CreatedAt:        req.CreatedAt,
 		ErrorBudgetSpent: req.ErrorBudgetSpent,
 		RealErrorBudget:  req.RealErrorBudget,
+		Observations:     req.Observations,
 	}
 	if err := cs.DB.Save(incident).Error; err != nil {
 		return nil, errors.InternalServerStd().AddDebug(err)
@@ -133,11 +136,17 @@ func (cs *IncidentStore) Update(incident *schema.Incident, update *schema.Incide
 		return nil, errors.BadRequest(err.Error()).AddDebug(err)
 	}
 
+	maxObservation := viper.GetInt("MAX_OBSERVATIONS_LENGTH")
+	if len(update.Observations) > maxObservation {
+		return nil, errors.BadRequest(fmt.Sprintf("observations must be less than %d characters", maxObservation))
+	}
+
 	if err := cs.DB.Model(incident).Updates(map[string]interface{}{
 		"State":             update.State,
 		"ErrorBudgetSpent":  update.ErrorBudgetSpent,
 		"MarkFalsePositive": update.MarkFalsePositive,
 		"RealErrorBudget":   update.RealErrorBudget,
+		"Observations":      update.Observations,
 	}).Error; err != nil {
 		return nil, errors.InternalServerStd().AddDebug(err)
 	}

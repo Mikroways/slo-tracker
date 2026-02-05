@@ -17,6 +17,7 @@ const ReportDrawer: React.FC<IProps> = ({ show, onClose, ...props }) => {
   const onSubmit = async (values) => {
     const sli_name = values['sli_name'];
     const err_budget_spent = parseFloat(values['err_budget']);
+    const observations = values['observations'];
 
     const _incidentService = new IncidentService(props.SLO.id);
 
@@ -24,6 +25,7 @@ const ReportDrawer: React.FC<IProps> = ({ show, onClose, ...props }) => {
       await _incidentService.create({
         sli_name,
         err_budget_spent,
+        observations,
         alertsource: 'webUI',
         state: 'closed',
       });
@@ -62,6 +64,14 @@ const ReportDrawer: React.FC<IProps> = ({ show, onClose, ...props }) => {
           rules={[{ required: true, message: 'Please provide Error Budget' }]}
         >
           <Input placeholder="Eg: 12" />
+        </Form.Item>
+
+        <Form.Item
+          label="Observations"
+          name="observations"
+          rules={[{ required: false }]}
+        >
+          <Input placeholder="Please provide an Observation (optional)" />
         </Form.Item>
 
         <Form.Item>

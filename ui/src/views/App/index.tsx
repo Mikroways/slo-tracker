@@ -91,6 +91,7 @@ const AppView: React.FC = () => {
 					<Sider
 						breakpoint="lg"
 						collapsedWidth="0"
+						width="300px"
 						className="app__layout-light_background app__layout_fixed_layout"
 					>
 						{renderSideBar()}

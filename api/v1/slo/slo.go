@@ -274,6 +274,10 @@ func updateFalsePositive(w http.ResponseWriter, r *http.Request) *errors.AppErro
 	updated := incident
 	updated.MarkFalsePositive = *setFalsePositiveReq.MarkFalsePositive
 
+	if setFalsePositiveReq.Observations != "" {
+		updated.Observations = setFalsePositiveReq.Observations
+	}
+
 	if incident, err = store.Incident().Update(incident, updated); err != nil {
 		return err
 	}
