@@ -90,7 +90,7 @@ const SLITable: React.FC<IProps> = ({ SLIs, ...props }) => {
 
   const updateObservations = async (sli: IIncident, newText: string) => {
 
-    const _incidentService = new IncidentService(sli.id);
+    const _incidentService = new IncidentService(sli.slo_id);
 
     if (newText.length >= 500) {
       openNotification('error', 'Observations must be less than 500 characters');
