@@ -143,7 +143,11 @@ const SLOTable: React.FC<IProps> = ({ ...props }) => {
 			<Table
 				dataSource={tableData}
 				columns={tableColumns(props)}
-				pagination={{ pageSize: 15 }}
+				pagination={{
+					defaultPageSize: 15,
+					showSizeChanger: true,
+					pageSizeOptions: ['10', '15', '20', '50', '100'],
+				}}
 				size="middle"
 				style={{ width: "auto", margin: "0 2em" }}
 			/>
