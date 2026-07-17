@@ -67,7 +67,7 @@ const tableColumns = (props) => [
 	},
 ];
 
-const DownloadCSVButton = ({ data, yearMonth }: { data: any[]; yearMonth: string }) => {
+const DownloadCSVButton = ({ data, yearMonth, disabled }: { data: any[]; yearMonth: string; disabled?: boolean }) => {
   const downloadCSV = () => {
 	const headers = [
 	  "SLO Name",
@@ -102,7 +102,7 @@ const DownloadCSVButton = ({ data, yearMonth }: { data: any[]; yearMonth: string
   };
 
   return (
-    <Button type="primary" onClick={downloadCSV}>
+    <Button type="primary" onClick={downloadCSV} disabled={disabled}>
       Download CSV
     </Button>
   );
@@ -114,7 +114,7 @@ const SLOTable: React.FC<IProps> = ({ ...props }) => {
 		setSelectedMonth(value ?? moment());
 	  };
 
-	const { overview } = useGetOverview(
+	const { overview, loading } = useGetOverview(
 		selectedMonth ? selectedMonth.format('YYYY-MM') : undefined
 	);
 
@@ -138,6 +138,7 @@ const SLOTable: React.FC<IProps> = ({ ...props }) => {
 				<DownloadCSVButton
 					data={tableData}
 					yearMonth={selectedMonth.format("YYYY-MM")}
+					disabled={loading}
 				/>
 			</div>
 			<Table
@@ -148,6 +149,7 @@ const SLOTable: React.FC<IProps> = ({ ...props }) => {
 					showSizeChanger: true,
 					pageSizeOptions: ['10', '15', '20', '50', '100'],
 				}}
+				loading={loading}
 				size="middle"
 				style={{ width: "auto", margin: "0 2em" }}
 			/>
